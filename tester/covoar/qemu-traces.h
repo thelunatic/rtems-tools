@@ -33,6 +33,7 @@
 
 /* XXX really not always right */
 /* XXX Added for covoar so this compiles */
+//typedef uint32_t target_ulong;
 typedef uint32_t target_ulong;
 
 /* File header definition.  */

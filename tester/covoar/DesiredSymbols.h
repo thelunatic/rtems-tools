@@ -218,11 +218,14 @@ namespace Coverage {
      *  This method creates a coverage map for the specified symbol
      *  using the specified size.
      *
+     *  @param[in] exefileName specifies the executable from which the
+     *             coverage map is being created
      *  @param[in] symbolName specifies the symbol for which to create
      *             a coverage map
      *  @param[in] size specifies the size of the coverage map to create
      */
     void createCoverageMap(
+      const std::string& exefileName,
       const std::string& symbolName,
       uint32_t           size
     );

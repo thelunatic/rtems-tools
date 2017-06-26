@@ -147,10 +147,11 @@ namespace Coverage {
               stderr,
               "*** Trace block is inconsistent with coverage map\n"
               "*** Trace block (0x%08x - 0x%08x) for %d bytes\n"
-              "*** Coverage map XXX \n",
+              "*** Coverage map %s\n",
               entry->pc,
               a,
-              entry->size
+              entry->size,
+              file
             );
           } else {
             while (!aCoverageMap->isStartOfInstruction(a))

@@ -335,6 +335,7 @@ namespace Coverage {
 
 
   void DesiredSymbols::createCoverageMap(
+    const std::string& exefileName,
     const std::string& symbolName,
     uint32_t           size
   )
@@ -366,9 +367,12 @@ namespace Coverage {
         fprintf(
           stderr,
           "ERROR: DesiredSymbols::createCoverageMap - Attempt to create "
-          "unified coverage maps for %s with different sizes (%d != %d)\n",
+          "unified coverage maps for %s with different sizes (%s/%d != %s/%d)\n",
+          
           symbolName.c_str(),
+          exefileName.c_str(),
           itr->second.stats.sizeInBytes,
+          itr->second.sourceFile->getFileName().c_str(),
           size
         );
         if ( itr->second.stats.sizeInBytes < size )
@@ -384,13 +388,14 @@ namespace Coverage {
 
       highAddress = size - 1;
 
-      aCoverageMap = new CoverageMap( 0, highAddress );
+      aCoverageMap = new CoverageMap( exefileName, 0, highAddress );
       if (!aCoverageMap) {
 
         fprintf(
           stderr,
           "ERROR: DesiredSymbols::createCoverageMap - Unable to allocate "
-          "coverage map for %s\n",
+          "coverage map for %s:%s\n",
+          exefileName.c_str(),
           symbolName.c_str()
         );
         exit( -1 );

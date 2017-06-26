@@ -23,6 +23,9 @@
 #include "TargetFactory.h"
 #include "GcovData.h"
 
+#include "SymbolSetReader.h"
+#include "SymbolSet.h"
+
 /*
  *  Variables to control general behavior
  */
@@ -38,6 +41,7 @@ std::list<Coverage::ExecutableInfo*> executablesToAnalyze;
 const char*                          explanations = NULL;
 char*                                progname;
 const char*                          symbolsFile = NULL;
+const char*							 symbolSetFile = NULL;
 const char*		             gcnosFileName = NULL;
 char				     gcnoFileName[FILE_NAME_LENGTH];
 char				     gcdaFileName[FILE_NAME_LENGTH];
@@ -64,6 +68,7 @@ void usage()
            "(RTEMS, QEMU, TSIM or Skyeye)\n"
     "  -E EXPLANATIONS           - name of file with explanations\n"
     "  -s SYMBOLS_FILE           - name of file with symbols of interest\n"
+    "  -S SYMBOL_SET_FILE        - name of file specifying symbol set of interest\n"
     "  -1 EXECUTABLE             - name of executable to get symbols from\n"
     "  -e EXE_EXTENSION          - extension of the executables to analyze\n"
     "  -c COVERAGEFILE_EXTENSION - extension of the coverage files to analyze\n"
@@ -89,6 +94,7 @@ Configuration::Options_t Options[] = {
   { "explanations",         NULL },
   { "format",               NULL },
   { "symbolsFile",          NULL },
+  { "symbolSetFile",		NULL },
   { "outputDirectory",      NULL },
   { "executableExtension",  NULL },
   { "coverageExtension",    NULL },
@@ -166,7 +172,7 @@ int main(
   //
   progname = argv[0];
 
-  while ((opt = getopt(argc, argv, "C:1:L:e:c:g:E:f:s:T:O:p:v")) != -1) {
+  while ((opt = getopt(argc, argv, "C:1:L:e:c:g:E:f:s:S:T:O:p:v")) != -1) {
     switch (opt) {
       case 'C': CoverageConfiguration->processFile( optarg ); break;
       case '1': singleExecutable      = optarg; break;
@@ -177,6 +183,7 @@ int main(
       case 'E': explanations          = optarg; break;
       case 'f': format                = optarg; break;
       case 's': symbolsFile           = optarg; break;
+      case 'S': symbolSetFile		  = optarg; break;
       case 'T': target                = optarg; break;
       case 'O': outputDirectory       = optarg; break;
       case 'v': Verbose               = true;   break;
@@ -337,8 +344,8 @@ int main(
   }
 
   // Validate that we have a symbols of interest file.
-  if (!symbolsFile) {
-    fprintf( stderr, "ERROR: symbols of interest file not specified\n" );
+  if (!symbolsFile && !symbolSetFile) {
+    fprintf( stderr, "ERROR: neither symbols of interest file nor symbol set file not specified\n" );
     usage();
     exit(-1);
   }
@@ -352,7 +359,24 @@ int main(
 
   // Create the set of desired symbols.
   SymbolsToAnalyze = new Coverage::DesiredSymbols();
-  SymbolsToAnalyze->load( symbolsFile );
+
+  //Load symbols from specified symbolsFile
+  if(symbolsFile) {
+	  SymbolsToAnalyze->load( symbolsFile );
+  }
+
+  //Read symbol configuration file and load needed symbols
+  if(symbolSetFile) {
+	  fprintf(stderr,"Reading symbols sets configuration for symbol set file: %s\n", symbolSetFile);
+	  Symbols::SymbolSetReader ssr;
+	  std::vector<Symbols::SymbolSet> symbolSets = ssr.readSetFile(symbolSetFile);
+
+	  Symbols::SymbolSet& set = symbolSets[0];
+	  fprintf(stderr,"Generating symbol file for %s\n", set.getName().c_str());
+	  set.generateSymbolFile(set.getName() + ".syms", target);
+	  SymbolsToAnalyze->load((set.getName() + ".syms").c_str());
+  }
+
   if (Verbose)
     fprintf(
       stderr,

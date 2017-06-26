@@ -97,7 +97,7 @@ namespace Coverage {
 
     // Create a coverage map for the symbol.
     aCoverageMap = executableInfo->createCoverageMap(
-      symbolName, lowAddress, endAddress
+      executableInfo->getFileName().c_str(), symbolName, lowAddress, endAddress
     );
 
     if (aCoverageMap) {
@@ -108,11 +108,16 @@ namespace Coverage {
            itr++ ) {
 
         aCoverageMap->setIsStartOfInstruction( itr->address );
+        if (strcmp(symbolName.c_str(), "_Thread_Handler"))
+        {
+          fprintf(stderr, "%s\n", itr->line.c_str());
+        }
       }
+      
 
       // Create a unified coverage map for the symbol.
       SymbolsToAnalyze->createCoverageMap(
-        symbolName, endAddress - lowAddress + 1
+        executableInfo->getFileName().c_str(), symbolName, endAddress - lowAddress + 1
       );
     }
   }
