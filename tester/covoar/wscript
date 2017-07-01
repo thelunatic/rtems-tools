@@ -47,9 +47,9 @@ top = '.'
 out = 'build'
 
 rtl_includes = ['../../rtemstoolkit',
-    '../../rtemstoolkit/elftoolchain/common',
-        '../../rtemstoolkit/elftoolchain/libelf',
-        '../../rtemstoolkit/libiberty']
+                '../../rtemstoolkit/elftoolchain/common',
+                '../../rtemstoolkit/elftoolchain/libelf',
+                '../../rtemstoolkit/libiberty']
 
 def init(ctx):
     pass
@@ -92,6 +92,8 @@ def build(bld):
                         'ReportsBase.cc',
                         'ReportsText.cc',
                         'ReportsHtml.cc',
+                        'SymbolSet.cpp',
+                        'SymbolSetReader.cpp',
                         'SymbolTable.cc',
                         'Target_arm.cc',
                         'TargetBase.cc',
@@ -100,9 +102,7 @@ def build(bld):
                         'Target_lm32.cc',
                         'Target_m68k.cc',
                         'Target_powerpc.cc',
-                        'Target_sparc.cc',
-                        'SymbolSet.cpp',
-                        'SymbolSetReader.cpp'],
+                        'Target_sparc.cc'],
               cflags = ['-O2', '-g'],
               cxxflags = ['-std=c++11', '-O2', '-g'],
               includes = ['.'] + rtl_includes)
