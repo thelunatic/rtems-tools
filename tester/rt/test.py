@@ -172,9 +172,10 @@ class test_run(object):
         if self.test:
             self.test.kill()
 
-def find_executables(paths, glob):
+def find_executables(paths, glob, path_to_builddir):
     executables = []
     for p in paths:
+        p = os.path.join(path_to_builddir, p)
         if path.isfile(p):
             executables += [p]
         elif path.isdir(p):
@@ -245,7 +246,8 @@ def run(command_path = None):
                     '--debug-trace': 'Debug trace based on specific flags',
                     '--filter':      'Glob that executables must match to run (default: ' +
                               default_exefilter + ')',
-                    '--stacktrace':  'Dump a stack trace on a user termination (^C)'}
+                    '--stacktrace':  'Dump a stack trace on a user termination (^C)',
+                    '--rtems-builddir': 'Include path to the bsp build directory'} 
         opts = options.load(sys.argv,
                             optargs = optargs,
                             command_path = command_path)
@@ -289,6 +291,9 @@ def run(command_path = None):
         if not bsp_script:
             raise error.general('BSP script not found: %s' % (bsp))
         bsp_config = opts.defaults.expand(opts.defaults[bsp])
+        path_to_builddir = opts.find_arg('--rtems-builddir')
+        if not path_to_builddir:
+          raise error.general("Path to build directory not provided")
         coverage_enabled = opts.coverage()
         if coverage_enabled:
             import coverage
@@ -297,7 +302,7 @@ def run(command_path = None):
             opts.defaults.load('%%{_configdir}/coverage.mc')
             if not check.check_exe('__covoar', opts.defaults['__covoar']):
                 raise error.general("Covoar not found!")
-            coverage = coverage.coverage_run(opts.defaults)
+            coverage = coverage.coverage_run(opts.defaults, path_to_builddir[1])
             coverage.prepareEnvironment()
         report_mode = opts.find_arg('--report-mode')
         if report_mode:
@@ -308,7 +313,7 @@ def run(command_path = None):
             report_mode = report_mode[1]
         else:
             report_mode = 'failures'
-        executables = find_executables(opts.params(), exe_filter)
+        executables = find_executables(opts.params(), exe_filter, path_to_builddir[1])
         if len(executables) == 0:
             raise error.general('no executables supplied')
         start_time = datetime.datetime.now()

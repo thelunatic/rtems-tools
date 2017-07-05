@@ -10,6 +10,7 @@ from rtemstoolkit import macros
 import shutil
 import os
 from datetime import datetime
+import options
 
 class summary:
     def __init__(self, p_summaryDir):
@@ -44,13 +45,18 @@ class summary:
         self.branches_alwaysTaken = self._getValueFromNextLineWithoutColon(summaryFile)
         self.branches_neverTaken = self._getValueFromNextLineWithoutColon(summaryFile)
         summaryFile.close()
-
-        self.percentage_branchesCovered = 1 - float(self.branches_uncovered) / float(self.branches_total)
+        if not self.branches_uncovered == '' and not self.branches_total == '':
+          self.percentage_branchesCovered = 1 - float(self.branches_uncovered) / float(self.branches_total)
+        else:
+          self.percentage_branchesCovered = 0.0
         return
 
     def _getValueFromNextLineWithColon(self, summaryFile):
         line = summaryFile.readline()
-        return line.split(':')[1].strip()
+        if ':' in line:
+          return line.split(':')[1].strip()
+        else:
+          return ''
 
     def _getValueFromNextLineWithoutColon(self, summaryFile):
         line = summaryFile.readline()
@@ -174,7 +180,7 @@ class symbolsConfiguration(object):
                     name=SYMBOLSET_NAME_N
                     lib=PATH_TO_LIBRARY        ''')
 
-    def load(self, symbolSetConfigFile):
+    def load(self, symbolSetConfigFile, path_to_builddir):
         scf = open(symbolSetConfigFile, 'r')
         for line in scf:
             try:
@@ -188,7 +194,9 @@ class symbolsConfiguration(object):
                         if key == 'name':
                             self.symbolSets[-1].name = value
                         elif key == 'lib':
-                            self.symbolSets[-1].libs.append(value)
+                            lib = os.path.join(path_to_builddir, value)
+                            log.stderr(lib + "\n")
+                            self.symbolSets[-1].libs.append(lib)
                         else:
                             log.stderr("Invalid key : " + key + " in symbol set configuration file " + symbolSetConfigFile)
                     else:
@@ -229,6 +237,14 @@ class symbolSet(object):
             f.write("\t lib=" + lib + '\n')
         f.close()
 
+class gcnos(object):
+    def create_gcnos_file(self, gcnos_config_file_path, gcnos_file_path, path_to_builddir):
+        with open(gcnos_file_path, 'w') as gcnos_file:
+            with open(gcnos_config_file_path, 'r') as config_file:
+                for line in config_file:
+                    if line.strip():
+                        gcnos_file.write(path.join(path_to_builddir, line))
+
 class covoar(object):
     '''
     Covoar runner
@@ -240,7 +256,7 @@ class covoar(object):
         self.tracesDir = tracesDir
         self.covoarSrcDir = covoarSrcDir
 
-    def run(self, setName, covoarConfigFile, symbolFile):
+    def run(self, setName, covoarConfigFile, symbolFile, gcnos_file):
         covoarResultDir = path.join(self.baseResultDir, setName)
 
         if (not path.exists(covoarResultDir)):
@@ -252,6 +268,8 @@ class covoar(object):
             return
 
         command = "covoar -C" + covoarConfigFile + " -S " + symbolFile + " -O " + covoarResultDir + " " + path.join(self.tracesDir, "*.exe")
+        if (path.exists(gcnos_file)):
+            command = command + " -g " + gcnos_file
         log.notice("Running covoar for " + setName, stdout_only=True)
         log.notice(command, stdout_only=True)
         executor = execute.execute(verbose=True, output=output_handler)
@@ -270,7 +288,7 @@ class coverage_run(object):
     Coverage analysis support for rtems-test
     '''
 
-    def __init__(self, p_macros):
+    def __init__(self, p_macros, path_to_builddir):
         '''
         Constructor
         '''
@@ -285,6 +303,8 @@ class coverage_run(object):
         self.config_map = self.macros.macros['coverage']
         self.executables = None
         self.symbolSets = []
+        self.path_to_builddir = path_to_builddir
+        self.gcnos_file_path = path.join(self.coverageConfigPath, "rtems.gcnos")
 
     def prepareEnvironment(self):
         if(path.exists(self.tracesDir)):
@@ -298,7 +318,7 @@ class coverage_run(object):
         ccf.write("target = " + self.config_map['target'][2] + '\n')
         ccf.write("explanations = " + self.macros.expand(self.config_map['explanations'][2]) + '\n')
         ccf.write("coverageExtension = " + self.config_map['coverageextension'][2] + '\n')
-        ccf.write("gcnosFile = " + self.macros.expand(self.config_map['gcnosfile'][2]) + '\n')
+#        ccf.write("gcnosFile = " + self.macros.expand(self.config_map['gcnosfile'][2]) + '\n')
         ccf.write("executableExtension = " + self.config_map['executableextension'][2] + '\n')
         ccf.write("projectName = " + self.config_map['projectname'][2] + '\n')
         ccf.close()
@@ -320,7 +340,9 @@ class coverage_run(object):
         self._linkExecutables()
 
         symbolConfig = symbolsConfiguration()
-        symbolConfig.load(self.symbolConfigPath)
+        symbolConfig.load(self.symbolConfigPath, self.path_to_builddir)
+        gcnos_file = path.join(self.tracesDir, "rtems.gcnos")
+        gcnos().create_gcnos_file(self.gcnos_file_path, gcnos_file, self.path_to_builddir)
 
         for sset in symbolConfig.symbolSets:
             if sset.isValid():
@@ -329,7 +351,7 @@ class coverage_run(object):
                 self.symbolSets.append(sset.name)
 
                 covoar_run = covoar(self.testDir, self.symbolConfigPath, self.tracesDir, path.join(self.rtdir, 'covoar'))
-                covoar_run.run(sset.name, covoarConfigFile, symbolSetFile)
+                covoar_run.run(sset.name, covoarConfigFile, symbolSetFile, gcnos_file)
             else:
                 log.stderr("Invalid symbol set " + sset.name + ". Skipping covoar run.")
 
@@ -342,7 +364,11 @@ class coverage_run(object):
 
         for exe in self.executables:
             dst = path.join(self.tracesDir, path.basename(exe))
-            os.link(exe, dst)
+            try:
+                os.link(exe, dst)
+            except OSError, e:
+                log.stderr("creating hardlink from " + path.abspath(exe) + " to " + dst + " failed!")
+                raise
         log.notice("Symlinks made")
 
     def _generateReports(self):
