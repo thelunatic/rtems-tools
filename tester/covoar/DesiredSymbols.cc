@@ -366,7 +366,7 @@ namespace Coverage {
 
         fprintf(
           stderr,
-          "ERROR: DesiredSymbols::createCoverageMap - Attempt to create "
+          "INFO: DesiredSymbols::createCoverageMap - Attempt to create "
           "unified coverage maps for %s with different sizes (%s/%d != %s/%d)\n",
           
           symbolName.c_str(),
@@ -649,7 +649,7 @@ namespace Coverage {
 
       fprintf(
         stderr,
-        "ERROR: DesiredSymbols::mergeCoverageMap - Unable to merge "
+        "INFO: DesiredSymbols::mergeCoverageMap - Unable to merge "
         "coverage map for %s because it is NOT a desired symbol\n",
         symbolName.c_str()
       );
@@ -665,7 +665,7 @@ namespace Coverage {
 
       fprintf(
         stderr,
-        "ERROR: DesiredSymbols::mergeCoverageMap - Unable to merge "
+        "INFO: DesiredSymbols::mergeCoverageMap - Unable to merge "
         "coverage map for %s because the sizes are different\n",
         symbolName.c_str()
       );
