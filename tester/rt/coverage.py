@@ -267,7 +267,7 @@ class covoar(object):
             log.stderr("Skipping " + setName)
             return
 
-        command = "covoar -C" + covoarConfigFile + " -S " + symbolFile + " -O " + covoarResultDir + " " + path.join(self.tracesDir, "*.exe")
+        command = "covoar -v -C" + covoarConfigFile + " -S " + symbolFile + " -O " + covoarResultDir + " " + path.join(self.tracesDir, "*.exe")
         if (path.exists(gcnos_file)):
             command = command + " -g " + gcnos_file
         log.notice("Running covoar for " + setName, stdout_only=True)
