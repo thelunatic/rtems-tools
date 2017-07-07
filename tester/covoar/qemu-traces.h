@@ -34,7 +34,6 @@
 /* XXX really not always right */
 /* XXX Added for covoar so this compiles */
 //typedef uint32_t target_ulong;
-typedef uint32_t target_ulong;
 
 /* File header definition.  */
 struct trace_header
@@ -69,7 +68,10 @@ struct trace_header
 /* Header is followed by trace entries.  */
 struct trace_entry
 {
-    target_ulong pc;
+   /* FIXME: import target_ulong */
+   /* target_ulong pc; */
+    uint32_t pc;
+
     uint16_t size;
     uint8_t op;
 };
@@ -97,24 +99,33 @@ struct trace_entry64
 /* _BLOCK means pc .. pc+size-1 was executed.  */
 #define TRACE_OP_BLOCK 0x10 /* Block fully executed.  */
 #define TRACE_OP_FAULT 0x20 /* Fault at pc.  */
-#define TRACE_OP_DYN   0x40 /* Dynamic branch.  */
+//#define TRACE_OP_DYN   0x40 /* Dynamic branch.  */
 #define TRACE_OP_BR0 0x01 /* Branch taken "in direction 0".  */
 #define TRACE_OP_BR1 0x02 /* Branch taken "in direction 1". */
-#define TRACE_OP_BR2 0x04
-#define TRACE_OP_BR3 0x08
+//#define TRACE_OP_BR2 0x04
+//#define TRACE_OP_BR3 0x08
 
+#define TRACE_OP_SPECIAL 0x80   /* Special info in trace file */
+/* Special operations (in size). */
+#define TRACE_SPECIAL_LOADADDR 0x1  /* Module loaded at PC. */
+
+/* Only used internally in cpu-exec.c */
+#define TRACE_OP_HIST_SET   0x100 /* Set in the map file. */
+#define TRACE_OP_HIST_CACHE 0x200 /* Has already been searched. */
 /*
  * Decision map operations
  */
-#define TRACE_OP_TRACE_CONDITIONAL 1
+
 /* Trace conditional jump instruction at address */
+#define TRACE_OP_TRACE_CONDITIONAL 1
 
 extern struct trace_entry *trace_current;
-extern int tracefile_enabled;
-extern int tracefile_nobuf;
-extern int tracefile_history;
+extern int                 tracefile_enabled;
+//extern int tracefile_nobuf;
+//extern int tracefile_history;
 
 void trace_init (const char *optarg);
+void trace_cleanup(void);
 void trace_push_entry (void);
-
+void trace_special(uint16_t subop, uint32_t data);
 #endif /* QEMU_TRACE_H */
