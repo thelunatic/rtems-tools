@@ -123,3 +123,9 @@ def build(bld):
                 use = ['ccovoar','RLD'],
                 cflags = ['-O2', '-g'],
                 includes = ['.'])
+
+    bld.program(target = 'qemu-dump-trace',
+                source = ['qemu-dump-trace.c'],
+                use = 'ccovoar',
+                cflags = ['-O2', '-g'],
+                includes = ['.'])
