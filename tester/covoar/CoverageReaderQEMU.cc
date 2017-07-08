@@ -139,7 +139,7 @@ namespace Coverage {
         // Determine if additional branch information is available.
         if ( (entry->op & branchInfo) != 0 ) {
           uint32_t  offset_e, offset_a;
-          uint32_t  a = entry->pc + entry->size - 1;
+          uint32_t  a = entry->pc + entry->size - 4;
           if ((aCoverageMap->determineOffset( a, &offset_a ) != true)   ||
              (aCoverageMap->determineOffset( entry->pc, &offset_e ) != true))
           {
