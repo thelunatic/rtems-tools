@@ -303,7 +303,7 @@ def run(command_path = None):
             if not check.check_exe('__covoar', opts.defaults['__covoar']):
                 raise error.general("Covoar not found!")
             coverage = coverage.coverage_run(opts.defaults, path_to_builddir[1])
-            coverage.prepareEnvironment()
+            coverage.prepare_environment()
         report_mode = opts.find_arg('--report-mode')
         if report_mode:
             if report_mode[1] != 'failures' and \
