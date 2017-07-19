@@ -138,22 +138,7 @@ namespace Coverage {
 
         // Determine if additional branch information is available.
         if ( (entry->op & branchInfo) != 0 ) {
-          uint32_t  offset_e, offset_a;
-          uint32_t  a = entry->pc + entry->size - 4;
-          if ((aCoverageMap->determineOffset( a, &offset_a ) != true)   ||
-             (aCoverageMap->determineOffset( entry->pc, &offset_e ) != true))
-          {
-            fprintf(
-              stderr,
-              "*** Trace block is inconsistent with coverage map\n"
-              "*** Trace block (0x%08x - 0x%08x) for %d bytes\n"
-              "*** Coverage map %s\n",
-              entry->pc,
-              a,
-              entry->size,
-              file
-            );
-          } else {
+          uint32_t  a = entry->pc + entry->size - 3;
             while (!aCoverageMap->isStartOfInstruction(a))
               a--;
             if (entry->op & taken) {
@@ -161,7 +146,6 @@ namespace Coverage {
             } else if (entry->op & notTaken) {
               aCoverageMap->setWasNotTaken( a );
             }
-          }
         }
       }
     }
