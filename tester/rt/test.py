@@ -239,15 +239,16 @@ def run(command_path = None):
     opts = None
     default_exefilter = '*.exe'
     try:
-        optargs = { '--rtems-tools': 'The path to the RTEMS tools',
-                    '--rtems-bsp':   'The RTEMS BSP to run the test on',
-                    '--report-mode': 'Reporting modes, failures (default),all,none',
-                    '--list-bsps':   'List the supported BSPs',
-                    '--debug-trace': 'Debug trace based on specific flags',
-                    '--filter':      'Glob that executables must match to run (default: ' +
+        optargs = { '--rtems-tools':    'The path to the RTEMS tools',
+                    '--rtems-bsp':      'The RTEMS BSP to run the test on',
+                    '--report-mode':    'Reporting modes, failures (default),all,none',
+                    '--list-bsps':      'List the supported BSPs',
+                    '--debug-trace':    'Debug trace based on specific flags',
+                    '--filter':         'Glob that executables must match to run (default: ' +
                               default_exefilter + ')',
-                    '--stacktrace':  'Dump a stack trace on a user termination (^C)',
-                    '--rtems-builddir': 'Include path to the bsp build directory'} 
+                    '--stacktrace':     'Dump a stack trace on a user termination (^C)',
+                    '--rtems-builddir': 'Include path to the bsp build directory',
+                    '--coverage':       'Perform coverage analysis and generate a report'}
         opts = options.load(sys.argv,
                             optargs = optargs,
                             command_path = command_path)
@@ -294,8 +295,7 @@ def run(command_path = None):
         path_to_builddir = opts.find_arg('--rtems-builddir')
         if not path_to_builddir:
           raise error.general("Path to build directory not provided")
-        coverage_enabled = opts.coverage()
-        if coverage_enabled:
+        if opts.find_arg('--coverage'):
             import coverage
             from rtemstoolkit import check
             log.notice("Coverage analysis requested")
@@ -365,7 +365,7 @@ def run(command_path = None):
         end_time = datetime.datetime.now()
         log.notice('Average test time: %s' % (str((end_time - start_time) / total)))
         log.notice('Testing time     : %s' % (str(end_time - start_time)))
-        if coverage_enabled:
+        if opts.find_arg('--coverage'):
             coverage.config_map = opts.defaults.macros['coverage']
             coverage.executables = executables
             coverage.run()
