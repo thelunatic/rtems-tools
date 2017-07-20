@@ -172,7 +172,6 @@ class report_gen:
         head_section = self._prepare_head_section()
         index_content = self._prepare_index_content(partial_reports)
         self._create_index_file(head_section,index_content)
-#         _create_summary_file(summary_content)
 
 class symbols_configuration(object):
     '''
@@ -317,6 +316,7 @@ class coverage_run(object):
         self.symbol_sets = []
         self.path_to_builddir = path_to_builddir
         self.gcnos_file_path = path.join(self.coverage_config_path, "rtems.gcnos")
+        self.no_clean = int(self.macros['_no_clean'])
 
     def prepare_environment(self):
         if(path.exists(self.traces_dir)):
@@ -329,10 +329,9 @@ class coverage_run(object):
         ccf.write("format = " + self.config_map['format'][2] + '\n')
         ccf.write("target = " + self.config_map['target'][2] + '\n')
         ccf.write("explanations = " + self.macros.expand(self.config_map['explanations'][2]) + '\n')
-        ccf.write("coverageExtension = " + self.config_map['coverageextension'][2] + '\n')
-#        ccf.write("gcnos_file = " + self.macros.expand(self.config_map['gcnosfile'][2]) + '\n')
-        ccf.write("executableExtension = " + self.config_map['executableextension'][2] + '\n')
-        ccf.write("projectName = " + self.config_map['projectname'][2] + '\n')
+        ccf.write("coverageExtension = " + self.config_map['coverage_extension'][2] + '\n')
+        ccf.write("executableExtension = " + self.config_map['executable_extension'][2] + '\n')
+        ccf.write("projectName = " + self.config_map['project_name'][2] + '\n')
         ccf.close()
 
     def run(self):
@@ -389,8 +388,9 @@ class coverage_run(object):
         report.generate()
 
     def _cleanup(self):
-        log.notice("Cleaning workspace up")
-        path.removeall(self.traces_dir)
+        if not self.no_clean:
+            log.notice("Cleaning workspace up")
+            path.removeall(self.traces_dir)
 
     def _summarize(self):
         log.notice("Coverage analysis finished. You can find results in " + self.target_dir)
