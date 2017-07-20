@@ -105,7 +105,6 @@ class command_line(object):
             '--keep-going'     : ('_keep_going',       self._lo_bool,     False, '0',       True),
             '--always-clean'   : ('_always_clean',     self._lo_bool,     False, '0',       True),
             '--no-install'     : ('_no_install',       self._lo_bool,     False, '0',       True),
-            '--coverage'       : ('_coverage',         self._lo_bool,     False, '0',       False),
             '--help'           : (None,                self._lo_help,     False, None,      False)
         }
         self.long_opts_help = {
@@ -119,8 +118,7 @@ class command_line(object):
             '--keep-going':                 'Do not stop on an error.',
             '--jobs=[0..n,none,half,full]': 'Run with specified number of jobs, default: num CPUs.',
             '--macros file[,file]':         'Macro format files to load after the defaults',
-            '--log file':                   'Log file where all build output is written to',
-            '--coverage':                   'Perform coverage analysis',
+            '--log file':                   'Log file where all build output is written to'
         }
         self.opts = { 'params' : [] }
         self.command_path = command_path
@@ -420,9 +418,6 @@ class command_line(object):
 
     def no_install(self):
         return self.opts['no-install'] != '0'
-
-    def coverage(self):
-        return self.opts['coverage'] != '0'
 
     def user_macros(self):
         #
