@@ -29,20 +29,21 @@
 #
 
 #
-# The Leon 3 QEMU BSP
+# All paths in defaults must be Unix format. Do not store any Windows format
+# paths in the defaults.
 #
-[leon3_qemu]
-bsp           = leon3_qemu
-arch          = sparc
-tester        = %{_rtscripts}/qemu.cfg
-bsp_qemu_opts = %{qemu_opts_base} -M leon3_generic
+# Every entry must describe the type of checking a host must pass.
+#
+# Records:
+#  key: type, attribute, value
+#   type     : none, dir, exe, triplet
+#   attribute: none, required, optional
+#   value    : 'single line', '''multi line'''
+#
 
-[coverage]
-format               = QEMU
-target               = sparc-rtems4.12
-explanations         = %{_rtscripts}/coverage/Explanations.txt
-coverage_extension   = .cov
-gcnos_file           = %{_rtscripts}/coverage/rtems.gcnos
-executable_extension = exe
-project_name         = RTEMS-4.12
-report_format        = html
+#
+# Global defaults
+#
+[global]
+__covoar:			exe,	required, 'covoar'
+_coverage:          none,   none,     '1'
