@@ -442,6 +442,7 @@ def load(bsp, opts):
                     user_config = path.join(os.environ['HOME'], '.rtemstesterrc')
             if user_config:
                 if path.exists(user_config):
+                    print(user_config)
                     cfg = configuration.configuration()
                     cfg.load(user_config)
                     if cfg.has_section(bsp):

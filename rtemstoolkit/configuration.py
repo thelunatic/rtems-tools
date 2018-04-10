@@ -98,7 +98,7 @@ class configuration:
     def get_items(self, section, err = True, flatten = True):
         try:
             items = []
-            for name, key in self.config.items(section):
+            for name, key in self.config.items(section,raw=True):
                 if flatten:
                     items += [(name, key.replace(os.linesep, ' '))]
                 else:
@@ -117,7 +117,7 @@ class configuration:
 
     def get_item_names(self, section, err = True):
         try:
-            return [item[0] for item in self.config.items(section)]
+            return [item[0] for item in self.config.items(section,raw=True)]
         except:
             if err:
                 raise error.general('config: section "%s" not found' % (section))
