@@ -59,7 +59,7 @@ class summary:
 
     def parse(self):
         if(not path.exists(self.summary_file_path)):
-            log.notice('summary file %s does not exist!' % (self.summary_file_path))
+            log.notice('summary file %s does not exist!' % (self.summary_file_path)) 
             self.is_failure = True
             return
 
@@ -236,9 +236,9 @@ class symbols_configuration(object):
                             else:
                                 raise error.general('invalid key: %s in symbol_sets.cfg' % (key, symbol_set_config_file))
                         else:
-                            raise error.general('use 1 and only 1 "=" per line in symbol_sets.cfg')
+                            raise error.general('use 1 and only 1 "=" per line in symbol_sets.cfg') 
                 except:
-                    raise error.general('invalid format in symbol_sets.cfg')
+                    raise error.general('invalid format in symbol_sets.cfg') 
 
     def save(self, path):
         with open(path, 'w') as scf:
@@ -277,7 +277,7 @@ class covoar(object):
         self.config_dir = config_dir
         self.traces_dir = traces_dir
         self.executable_extension = config_map['executable_extension'][2]
-        self.executable = path.join(self.traces_dir, '*.'
+        self.executable = path.join(self.traces_dir, '*.' 
                                     + self.executable_extension)
         self.executables = ' '.join(executables)
         self.simulator_format = config_map['format'][2]
@@ -291,13 +291,13 @@ class covoar(object):
         if (not path.exists(covoar_result_dir)):
             path.mkdir(covoar_result_dir)
         if (not path.exists(symbol_file)):
-            raise error.general('symbol set file: coverage %s was not created for covoar, skipping %s'% (symbol_file, set_name))
-        command = ('covoar -s ' + symbol_file
-                  + ' -O ' + covoar_result_dir + ' -f ' + self.simulator_format
-                  + ' -T ' + self.target_arch + ' -E ' + self.explanations_txt
-                  + ' -c ' + self.coverage_extension
-                  + ' -e ' + self.executable_extension
-                  + ' -p ' + self.project_name + ' ' + self.executables)
+            raise error.general('symbol set file: coverage/%s.symcfg was not created for covoar, skipping %s' % (symbol_file, set_name))
+        command = ('covoar -S ' + symbol_file
+                  + ' -O ' + covoar_result_dir + ' -f' + self.simulator_format
+                  + ' -T' + self.target_arch + ' -E' + self.explanations_txt
+                  + ' -c' + self.coverage_extension
+                  + ' -e' + self.executable_extension
+                  + ' -p' + self.project_name + ' ' + self.executables)
         log.notice('Running covoar for %s' % (set_name))
         executor = execute.execute(verbose = True, output = self.output_handler)
         exit_code = executor.shell(command, cwd=os.getcwd())

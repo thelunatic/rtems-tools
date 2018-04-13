@@ -273,7 +273,6 @@ class macros:
         if trace_me:
             print('[[[[]]]] parsing macros')
         orig_macros = copy.copy(self.macros)
-
         map = 'global'
         lc = 0
         state = 'key'
@@ -408,7 +407,6 @@ class macros:
             if path.exists(n):
                 try:
                     mc = open(path.host(n), 'r')
-
                     macros = self.parse(mc)
                     mc.close()
                     self.files += [n]
@@ -482,9 +480,7 @@ class macros:
                                         (m, _str))
                 _str = _str.replace(m, macro[2])
                 expanded = True
-
         return _str
-
 
     def find(self, regex):
         what = re.compile(regex)
