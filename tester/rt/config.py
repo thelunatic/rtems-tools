@@ -420,15 +420,29 @@ def load(bsp, opts):
             cfg.load(path.join(p, ini_name))
             if not cfg.has_section(bsp):
                 raise error.general('bsp section not found in ini: [%s]' % (bsp))
+###############################################
+            if not cfg.has_section('coverage'):
+                raise error.general('coverage section not found in ini: [%s]' % (bsp))
+########################################################
             item_names = cfg.get_item_names(bsp, err = False)
             for m in mandatory:
                 if m not in item_names:
                     raise error.general('mandatory item not found in bsp section: %s' % (m))
+
             opts.defaults.set_write_map(bsp, add = True)
-            for i in cfg.get_items(bsp, flatten = False):
+############################################
+            opts.defaults.set_write_map('coverage',add=True)
+###########################################
+            for i in cfg.get_items(bsp, err = False, flatten = False):#HERE
                 opts.defaults[i[0]] = i[1]
             if not opts.defaults.set_read_map(bsp):
                 raise error.general('cannot set BSP read map: %s' % (bsp))
+########################################################
+            for i in cfg.get_items('coverage', err = False, flatten = False):#HERE
+                opts.defaults[i[0]] = i[1]
+            if not opts.defaults.set_read_map('coverage'):
+                raise error.general('cannot set coverage read map: %s' % (bsp))
+#########################################################
             # Get a copy of the required fields we need
             requires = cfg.comma_list(bsp, 'requires', err = False)
             del cfg
@@ -448,6 +462,11 @@ def load(bsp, opts):
                     if cfg.has_section(bsp):
                         for i in cfg.get_items(bsp, flatten = False):
                             opts.defaults[i[0]] = i[1]
+#################################################
+                    if cfg.has_section('coverage'):
+                         for i in cfg.get_items('coverage' , flatten = False):
+                             opts.defaults[i[0]] = i[1]
+############################################################
             # Check for the required values.
             for r in requires:
                 if opts.defaults.get(r) is None:
