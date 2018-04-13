@@ -212,7 +212,7 @@ def _job_trace(tst, msg, total, exe, active, reporting):
                                                 reporting, total, exe, s))
 
 def list_bsps(opts):
-    path_ = opts.defaults.expand('%%{_configdir}/bsps/*.mc')
+    path_ = opts.defaults.expand('%%{_configdir}/bsps/*.ini')
     bsps = path.collect_files(path_)
     log.notice(' BSP List:')
     for bsp in bsps:
