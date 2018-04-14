@@ -57,24 +57,7 @@ from . import options
 from . import report
 from . import coverage
 
-if sys.version_info[0] == 3:
-    def _test_reraise(tp, value, tb = None):
-        raise value.with_traceback(tb)
-else:
-    def exec_(_code_, _globs_ = None, _locs_ = None):
-        if _globs_ is None:
-            frame = sys._getframe(1)
-            _globs_ = frame.f_globals
-            if _locs_ is None:
-                _locs_ = frame.f_locals
-            del frame
-        elif _locs_ is None:
-            _locs_ = _globs_
-        exec("""exec _code_ in _globs_, _locs_""")
 
-    exec_("""def _test_reraise(tp, value, tb = None):
-    raise tp, value, tb
-""")
 
 class log_capture(object):
     def __init__(self):
@@ -176,7 +159,7 @@ class test_run(object):
 
     def reraise(self):
         if self.result is not None:
-            _test_reraise(*self.result)
+            reraise.reraise(*self.result)
 
     def kill(self):
         if self.test:
