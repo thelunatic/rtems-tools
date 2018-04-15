@@ -57,6 +57,8 @@ from . import options
 from . import report
 from . import coverage
 
+
+
 class log_capture(object):
     def __init__(self):
         self.log = []
@@ -157,7 +159,7 @@ class test_run(object):
 
     def reraise(self):
         if self.result is not None:
-            _test_reraise(*self.result)
+            reraise.reraise(*self.result)
 
     def kill(self):
         if self.test:

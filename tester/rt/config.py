@@ -423,6 +423,8 @@ def load(bsp, opts):
 ###############################################
             if not cfg.has_section('coverage'):
                 raise error.general('coverage section not found in ini: [%s]' % (bsp))
+            if not cfg.has_section('global'):
+                raise error.general('global section not found in ini: [%s]' % (bsp))
 ########################################################
             item_names = cfg.get_item_names(bsp, err = False)
             for m in mandatory:
@@ -431,8 +433,14 @@ def load(bsp, opts):
 
             opts.defaults.set_write_map(bsp, add = True)
 ############################################
+            opts.defaults.set_write_map('global',add=True)
             opts.defaults.set_write_map('coverage',add=True)
+
 ###########################################
+            for i in cfg.get_items('global', err = False, flatten = False):#HERE
+                opts.defaults[i[0]] = i[1]
+            if not opts.defaults.set_read_map('global'):
+                raise error.general('cannot set global read map: %s' % (bsp))
             for i in cfg.get_items(bsp, err = False, flatten = False):#HERE
                 opts.defaults[i[0]] = i[1]
             if not opts.defaults.set_read_map(bsp):
@@ -442,6 +450,7 @@ def load(bsp, opts):
                 opts.defaults[i[0]] = i[1]
             if not opts.defaults.set_read_map('coverage'):
                 raise error.general('cannot set coverage read map: %s' % (bsp))
+
 #########################################################
             # Get a copy of the required fields we need
             requires = cfg.comma_list(bsp, 'requires', err = False)
@@ -464,7 +473,10 @@ def load(bsp, opts):
                             opts.defaults[i[0]] = i[1]
 #################################################
                     if cfg.has_section('coverage'):
-                         for i in cfg.get_items('coverage' , flatten = False):
+                         for i in cfg.get_items('coverage' ,err = True, flatten = False):
+                             opts.defaults[i[0]] = i[1]
+                    if cfg.has_section('global'):
+                         for i in cfg.get_items('global' , flatten = False):
                              opts.defaults[i[0]] = i[1]
 ############################################################
             # Check for the required values.
