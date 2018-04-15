@@ -657,7 +657,7 @@ class file(object):
     def _process_data(self, results, directive, info, data):
         new_data = []
         for l in results[1]:
-            if l.startswith('%error'):
+            if l.startswith('%%error'):
                 l = self._expand(l)
                 raise error.general('config error: %s' % (l[7:]))
             elif l.startswith('%warning'):
