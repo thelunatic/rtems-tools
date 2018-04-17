@@ -46,7 +46,7 @@ namespace Configuration {
     virtual ~FileReader();
 
     /*!
-     *  This method processes the configuratino information from the input
+     *  This method processes the configuration information from the input
      *  @a file.
      *
      *  @param[in] file is the coverage file to process
@@ -70,7 +70,7 @@ namespace Configuration {
 
   private:
     /*!
-     *  This method processes the configuratino information from the input
+     *  This method processes the configuration information from the input
      *  @a file.
      *
      *  @param[in] option is the name of the option

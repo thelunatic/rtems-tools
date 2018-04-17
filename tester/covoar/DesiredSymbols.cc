@@ -5,10 +5,6 @@
  *  which provide the functionality of the DesiredSymbols.
  */
 
-#ifdef __CYGWIN__
-#undef __STRICT_ANSI__
-#endif
-
 #include <libgen.h>
 #include <limits.h>
 #include <stdio.h>
@@ -368,10 +364,9 @@ namespace Coverage {
       // ensure that the specified size matches the existing size.
       if (itr->second.stats.sizeInBytes != size) {
 
-        // Changed ERROR to INFO because size mismatch is not treated as
-        // error anymore.
-        // Set smallest size as size and continue.
-        // Update value for longer byte size.
+        // Changed ERROR to INFO because size mismatch is not treated as error anymore. 
+        // Set smallest size as size and continue. 
+        // Update value for longer byte size. 
         // 2015-07-22
         fprintf(
           stderr,
@@ -383,12 +378,13 @@ namespace Coverage {
           itr->second.stats.sizeInBytes,
           itr->second.sourceFile->getFileName().c_str(),
           size
-        );
+       );
 
         if ( itr->second.stats.sizeInBytes < size )
           itr->second.stats.sizeInBytes = size;
         else
           size = itr->second.stats.sizeInBytes;
+        // exit( -1 );
       }
     }
 
@@ -515,7 +511,7 @@ namespace Coverage {
       inputBuffer[ strlen(inputBuffer) - 1] = '\0';
 
       // Use only the base filename without directory path.
-#ifdef _WIN32
+#if WIN32
       #define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
 #endif
       realpath( inputBuffer, rpath );
@@ -667,8 +663,7 @@ namespace Coverage {
 
     // Ensure that the source and destination coverage maps
     // are the same size.
-    // Changed from ERROR msg to INFO, because size mismatch is not
-    // treated as error anymore. 2015-07-20
+    // Changed from ERROR msg to INFO, because size mismatch is not treated as error anymore. 2015-07-20
     dMapSize = itr->second.stats.sizeInBytes;
     sBaseAddress = sourceCoverageMap->getFirstLowAddress();
     sMapSize = sourceCoverageMap->getSize();
@@ -681,7 +676,9 @@ namespace Coverage {
         symbolName.c_str()
       );
       return;
+      // exit( -1 );
     }
+
 
     // Merge the data for each address.
     destinationCoverageMap = itr->second.unifiedCoverageMap;
