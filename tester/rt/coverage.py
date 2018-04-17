@@ -292,7 +292,7 @@ class covoar(object):
             path.mkdir(covoar_result_dir)
         if (not path.exists(symbol_file)):
             raise error.general('symbol set file: coverage %s was not created for covoar, skipping %s'% (symbol_file, set_name))
-        command = ('covoar -s ' + symbol_file
+        command = ('covoar -S ' + symbol_file
                   + ' -O ' + covoar_result_dir + ' -f ' + self.simulator_format
                   + ' -T ' + self.target_arch + ' -E ' + self.explanations_txt
                   + ' -c ' + self.coverage_extension
