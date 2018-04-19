@@ -101,8 +101,8 @@ def build(bld):
                         'Target_sparc.cc',
                         'SymbolSet.cpp',
                         'SymbolSetReader.cpp'],
-              cflags = ['-Os', '-g'],
-              cxxflags = ['-std=c++11', '-Os', '-g'],
+              cflags = ['-O0', '-g'],
+              cxxflags = ['-std=c++11', '-O0', '-g'],
               includes = ['.'] + rtl_includes)
 
     bld.program(target = 'trace-converter',
@@ -113,11 +113,11 @@ def build(bld):
                           'TraceWriterBase.cc',
                           'TraceWriterQEMU.cc'],
                 use = ['ccovoar','RLD'],
-                cflags = ['-Os', '-g'],
+                cflags = ['-O0', '-g'],
                 includes = ['.'] + rtl_includes)
 
     bld.program(target = 'covoar',
                 source = ['covoar.cc'],
                 use = ['ccovoar','RLD'],
-                cflags = ['-Os', '-g'],
+                cflags = ['-O0', '-g'],
                 includes = ['.'] + rtl_includes)
