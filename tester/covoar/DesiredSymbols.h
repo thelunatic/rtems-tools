@@ -20,8 +20,8 @@
 namespace Coverage {
 
 
-  /*!
-   *
+  /*! 
+   * 
    *  This class defines the statistics that are tracked.
    */
   class Statistics {
@@ -34,7 +34,7 @@ namespace Coverage {
     int branchesAlwaysTaken;
 
     /*!
-     *  This member variable contains the total number of branches where
+     *  This member variable contains the total number of branches where 
      *  one or more paths were executed.
      */
     int branchesExecuted;
@@ -55,7 +55,7 @@ namespace Coverage {
      *  This member contains the size in Bytes.
      */
     uint32_t sizeInBytes;
-
+    
     /*!
      *  This member contains the size in Bytes.
      */
@@ -93,7 +93,7 @@ namespace Coverage {
 
     /*!
      *  This method constructs a Statistics instance.
-     */
+     */   
      Statistics():
        branchesAlwaysTaken(0),
        branchesExecuted(0),
@@ -137,7 +137,7 @@ namespace Coverage {
 
     /*!
      *  This member contains the statistics kept on each symbol.
-     */
+     */    
     Statistics stats;
 
     /*!
@@ -186,24 +186,24 @@ namespace Coverage {
     typedef std::map<std::string, SymbolInformation> symbolSet_t;
 
     /*!
-     *  This variable contains a map of symbol sets for each
+     *  This variable contains a map of symbol sets for each 
      *  symbol in the system keyed on the symbol name.
      */
     symbolSet_t set;
 
-    /*!
+    /*! 
      *  This method constructs a DesiredSymbols instance.
      */
     DesiredSymbols();
 
-    /*!
+    /*! 
      *  This method destructs a DesiredSymbols instance.
      */
     ~DesiredSymbols();
 
     /*!
      *  This method loops through the coverage map and
-     *  calculates the statistics that have not already
+     *  calculates the statistics that have not already 
      *  been filled in.
      */
     void calculateStatistics( void );
@@ -319,7 +319,7 @@ namespace Coverage {
 
     /*!
      *  This member contains the statistics kept on each symbol.
-     */
+     */    
     Statistics stats;
 
   private:

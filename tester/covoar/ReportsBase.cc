@@ -14,7 +14,7 @@
 #include "ReportsText.h"
 #include "ReportsHtml.h"
 
-#ifdef _WIN32
+#if WIN32
 #include <direct.h>
 #endif
 
@@ -39,7 +39,7 @@ FILE* ReportsBase::OpenFile(
   std::string  file;
 
   // Create the output directory if it does not already exist
-#ifdef _WIN32
+#if WIN32
   sc = _mkdir( outputDirectory );
 #else
   sc = mkdir( outputDirectory,0755 );
@@ -210,11 +210,11 @@ void ReportsBase::WriteAnnotatedReport(
          itr != theInstructions->end();
          itr++ ) {
 
-      uint32_t           id = 0;
-      std::string        annotation = "";
-      std::string        line;
-      const std::size_t  LINE_LENGTH = 150;
-      char               textLine[LINE_LENGTH];
+      uint32_t     id = 0;
+      std::string  annotation = "";
+      std::string  line;
+      const std::size_t LINE_LENGTH = 150;
+      char         textLine[LINE_LENGTH];
 
       state = A_SOURCE;
 

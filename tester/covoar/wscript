@@ -49,6 +49,11 @@ out = 'build'
 def init(ctx):
     pass
 
+rtl_includes = ['../../rtemstoolkit',
+		'../../rtemstoolkit/elftoolchain/common',
+		'../../rtemstoolkit/elftoolchain/libelf',
+		'../../rtemstoolkit/libiberty']
+
 def options(opt):
     opt.load('compiler_cxx')
 
@@ -57,21 +62,10 @@ def configure(conf):
     conf.check_cc(function_name='open64', header_name="stdlib.h", mandatory = False)
     conf.check_cc(function_name='stat64', header_name="stdlib.h", mandatory = False)
     conf.write_config_header('covoar-config.h')
+    conf.env.STLIBPATH_RLD = conf.path.abspath() + '/../../build/rtemstoolkit'
+    conf.env.STLIB_RLD = ['rld','iberty','elf']
 
 def build(bld):
-    rtemstoolkit = '../../rtemstoolkit'
-    rtl_includes = [rtemstoolkit,
-		    rtemstoolkit + '/elftoolchain/libelf',
-		    rtemstoolkit + '/elftoolchain/common',
-		    rtemstoolkit + '/libiberty']
-    if bld.env.DEST_OS == 'win32':
-        rtl_includes += [rtemstoolkit + '/win32']
-
-    #
-    # The list of modules.
-    #
-    modules = ['rld', 'elf', 'iberty']
-
     bld.stlib(target = 'ccovoar',
               source = ['app_common.cc',
                         'CoverageFactory.cc',
@@ -104,7 +98,9 @@ def build(bld):
                         'Target_lm32.cc',
                         'Target_m68k.cc',
                         'Target_powerpc.cc',
-                        'Target_sparc.cc'],
+                        'Target_sparc.cc',
+                        'SymbolSet.cpp',
+                        'SymbolSetReader.cpp'],
               cflags = ['-O2', '-g'],
               cxxflags = ['-std=c++11', '-O2', '-g'],
               includes = ['.'] + rtl_includes)
@@ -116,12 +112,12 @@ def build(bld):
                           'TraceReaderLogQEMU.cc',
                           'TraceWriterBase.cc',
                           'TraceWriterQEMU.cc'],
-                use = ['ccovoar'] + modules,
+                use = ['ccovoar','RLD'],
                 cflags = ['-O2', '-g'],
                 includes = ['.'] + rtl_includes)
 
     bld.program(target = 'covoar',
                 source = ['covoar.cc'],
-                use = ['ccovoar'] + modules,
+                use = ['ccovoar','RLD'],
                 cflags = ['-O2', '-g'],
                 includes = ['.'] + rtl_includes)

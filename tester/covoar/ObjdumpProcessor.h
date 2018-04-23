@@ -76,11 +76,11 @@ namespace Coverage {
      */
     typedef std::list<objdumpLine_t> objdumpLines_t;
 
-
+   
     /*!
      *  This object defines a list of instruction addresses
      *  that will be extracted from the objdump file.
-     */
+     */ 
     typedef std::list<uint32_t> objdumpFile_t;
 
     /*!
@@ -99,14 +99,14 @@ namespace Coverage {
 
     /*!
      *  This method fills a tempfile with the .text section of objdump
-     *  for the given file name.
+     *  for the given file name.  
      */
     void getFile( std::string fileName,
                   rld::process::tempfile& dmp,
-                  rld::process::tempfile& err );
+                  rld::process::tempfile& err ); 
 
     /*!
-     *  This method fills the objdumpList list with all the
+     *  This method fills the objdumpList list with all the 
      *  instruction addresses in the object dump file.
      */
     void loadAddressTable (
@@ -138,7 +138,7 @@ namespace Coverage {
     bool IsBranch( const char *instruction );
 
     /*!
-     *  This method returns true if the instruction from
+     *  This method returns true if the instruction from 
      *  the given line in the objdmp file is a branch instruction,
      *  otherwise it returns false.
      */
