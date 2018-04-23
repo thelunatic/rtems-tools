@@ -57,6 +57,8 @@ from . import options
 from . import report
 from . import coverage
 
+
+
 class log_capture(object):
     def __init__(self):
         self.log = []
@@ -157,7 +159,7 @@ class test_run(object):
 
     def reraise(self):
         if self.result is not None:
-            _test_reraise(*self.result)
+            reraise.reraise(*self.result)
 
     def kill(self):
         if self.test:
@@ -212,6 +214,15 @@ def _job_trace(tst, msg, total, exe, active, reporting):
                                                 path.basename(tst.executable),
                                                 msg,
                                                 reporting, total, exe, s))
+
+def list_bsps(opts):
+    path_ = opts.defaults.expand('%%{_configdir}/bsps/*.ini')
+    bsps = path.collect_files(path_)
+    log.notice(' BSP List:')
+    for bsp in bsps:
+        log.notice('  %s' % (path.basename(bsp[:-3])))
+    raise error.exit()
+
 
 def killall(tests):
     for test in tests:
