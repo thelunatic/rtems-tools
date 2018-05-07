@@ -48,12 +48,14 @@ from rtemstoolkit import mailer
 from rtemstoolkit import reraise
 from rtemstoolkit import stacktraces
 from rtemstoolkit import version
+from rtemstoolkit import check
 
 from . import bsps
 from . import config
 from . import console
 from . import options
 from . import report
+from . import coverage
 
 class log_capture(object):
     def __init__(self):
@@ -214,6 +216,12 @@ def killall(tests):
     for test in tests:
         test.kill()
 
+
+def coverage_run(opts, coverage, executables):
+    #coverage.config_map = opts.defaults.macros['coverage']
+    coverage.executables = executables
+    coverage.run()
+
 def run(command_path = None):
     import sys
     tests = []
@@ -221,15 +229,16 @@ def run(command_path = None):
     opts = None
     default_exefilter = '*.exe'
     try:
-        optargs = { '--rtems-tools': 'The path to the RTEMS tools',
-                    '--rtems-bsp':   'The RTEMS BSP to run the test on',
-                    '--user-config': 'Path to your local user configuration INI file',
-                    '--report-mode': 'Reporting modes, failures (default),all,none',
-                    '--list-bsps':   'List the supported BSPs',
-                    '--debug-trace': 'Debug trace based on specific flags',
-                    '--filter':      'Glob that executables must match to run (default: ' +
+        optargs = { '--rtems-tools':    'The path to the RTEMS tools',
+                    '--rtems-bsp':      'The RTEMS BSP to run the test on',
+                    '--user-config':    'Path to your local user configuration INI file',
+                    '--report-mode':    'Reporting modes, failures (default),all,none',
+                    '--list-bsps':      'List the supported BSPs',
+                    '--debug-trace':    'Debug trace based on specific flags',
+                    '--filter':         'Glob that executables must match to run (default: ' +
                               default_exefilter + ')',
-                    '--stacktrace':  'Dump a stack trace on a user termination (^C)' }
+                    '--stacktrace':     'Dump a stack trace on a user termination (^C)',
+                    '--coverage':       'Perform coverage analysis of test exectuables.'}
         mailer.append_options(optargs)
         opts = options.load(sys.argv,
                             optargs = optargs,
@@ -279,6 +288,9 @@ def run(command_path = None):
             raise error.general('RTEMS BSP not provided or an invalid option')
         bsp = config.load(bsp[1], opts)
         bsp_config = opts.defaults.expand(opts.defaults['tester'])
+        coverage_enabled = opts.find_arg('--coverage')
+        if coverage_enabled:
+            coverage_runner = coverage.coverage_run(opts.defaults)
         report_mode = opts.find_arg('--report-mode')
         if report_mode:
             if report_mode[1] != 'failures' and \
@@ -365,6 +377,8 @@ def run(command_path = None):
                     reports.failures(),
                     'Log', '===', ''] + output.get()
             mail.send(to_addr, subject, os.linesep.join(body))
+        if coverage_enabled:
+            coverage_run(opts, coverage_runner, executables)
 
     except error.general as gerr:
         print(gerr)
