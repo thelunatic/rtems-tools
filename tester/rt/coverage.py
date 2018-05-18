@@ -92,9 +92,9 @@ class summary:
         return line.strip().split(' ')[0]
 
 class report_gen_html:
-    def __init__(self, p_symbol_sets_list, p_build_dir, rtdir):
-        self.symbol_sets_list = p_symbol_sets_list
-        self.build_dir = p_build_dir
+    def __init__(self, p_symbol_sets_list, build_dir, rtdir):
+        self.symbol_sets_list = ['score'] 
+        self.build_dir = build_dir 
         self.partial_reports_files = list(["index.html", "summary.txt"])
         self.number_of_columns = 1
         self.covoar_src_path = path.join(rtdir, 'covoar')
@@ -102,7 +102,7 @@ class report_gen_html:
     def _find_partial_reports(self):
         partial_reports = {}
         for symbol_set in self.symbol_sets_list:
-            set_summary = summary(path.join(self.build_dir, "test",
+            set_summary = summary(path.join(self.build_dir, "coverage",
                                   symbol_set))
             set_summary.parse()
             partial_reports[symbol_set] = set_summary
@@ -183,7 +183,7 @@ class report_gen_html:
         return '<a href="' + address + '">' + text + '</a>'
 
     def _create_index_file(self, head_section, content):
-        with open(path.join(self.build_dir, "report.html"),"w") as f:
+        with open(path.join(self.build_dir,"report.html"),'w') as f:
             f.write(head_section)
             f.write(content)
 
@@ -197,7 +197,7 @@ class report_gen_html:
         table_js_path = path.join(self.covoar_src_path, 'table.js')
         covoar_css_path = path.join(self.covoar_src_path, 'covoar.css')
         for symbol_set in self.symbol_sets_list:
-            symbol_set_dir = path.join(self.build_dir, "test", symbol_set)
+            symbol_set_dir = path.join(self.build_dir, "coverage", symbol_set)
             html_files = os.listdir(symbol_set_dir)
             for html_file in html_files:
                 html_file = path.join(symbol_set_dir, html_file)
@@ -210,63 +210,24 @@ class report_gen_html:
                     with open(html_file, 'w') as f:
                         f.write(file_data)
 
-class symbols_configuration(object):
+class build_path_generator(object):
     '''
-    Manages symbols configuration - reading from symbol file
+    Generates the build path from the path to executables
     '''
-    def __init__(self):
-        self.symbol_sets = []
+    def __init__(self, executables):
+        self.executables = executables
 
-    def load(self, symbol_set_config_file):
-        with open(symbol_set_config_file, 'r') as scf:
-            for line in scf:
-                try:
-                    if line.strip().startswith('[symbol-sets]'):
-                        self.symbol_sets.append(symbol_set('',[]))
-                    else:
-                        splitted = line.split('=')
-                        if (len(splitted) == 2):
-                            key = splitted[0].strip()
-                            value = splitted[1].strip()
-                            if key == 'sets':
-                                self.symbol_sets[-1].name = value
-                            elif key == 'libraries':
-                                lib = os.path.join(path_to_builddir, '/cpukit/' + value)
-                                self.symbol_sets[-1].libs.append(lib)
-                            else:
-                                raise error.general('invalid key: %s in %s' % (key, symbol_set_config_file))
-                        else:
-                            raise error.general('use 1 and only 1 "=" per line in score-symbols.ini')
-                except:
-                    raise error.general('invalid format in score-symbols.ini')
-
-    def save(self, path):
-        with open(path, 'w') as scf:
-            for sset in self.symbol_sets:
-                sset.write_set_file(path)
-
-class symbol_set(object):
-    def __init__(self, name, libs):
-        self.name = name
-        self.libs = libs
-
-    def is_valid(self):
-        if len(self.name) == 0:
-            raise error.general('symbol set has no name in symbol_sets.ini')
-        if len(self.libs) == 0:
-            raise error.general('symbol set contains no libraries to analyse in score-symbols.ini')
-        for lib in self.libs:
-            if not path.exists(lib):
-                log.notice('Invalid library path: %s in symbol_sets.ini' % (lib))
-                return False
-        return True
-
-    def write_set_file(self, path):
-        with open(path, 'w') as f:
-           f.write('symbolset:\n')
-           f.write('\t name=' + self.name + '\n')
-           for lib in self.libs:
-               f.write('\t lib=' + lib + '\n')
+    def run(self):
+        build_path = '/'
+        Path = self.executables[0].split('/')
+#FIXME : target must be taken from external
+        target = 'sparc-rtems5'
+        for P in Path:
+            if P == target:
+                break;
+            else:
+                build_path = path.join(build_path, P)
+        return build_path
 
 class covoar(object):
     '''
@@ -289,8 +250,9 @@ class covoar(object):
             raise error.general('symbol set file: coverage %s was not created for covoar, skipping %s'% (symbol_file, set_name))
         command = ('covoar -S ' + symbol_file
                   + ' -O ' + covoar_result_dir
-                  + ' -E ' + self.explanations_txt
-                  + ' -p ' + self.project_name + ' ' + '-v ' + self.executables)
+                  + ' -E ' + self.explanations_txt 
+                  #FIXME: add -v 
+                  + ' -p ' + self.project_name + ' ' + self.executables)
         log.notice('Running covoar for %s' % (set_name))
         print( 'covoar results directory:\n' + covoar_result_dir )
         executor = execute.execute(verbose = True, output = self.output_handler)
@@ -322,11 +284,8 @@ class coverage_run(object):
         self.coverage_config_path = path.join(self.rtscripts, 'coverage')
         self.symbol_config_path = path.join(self.coverage_config_path,
                                             'score-symbols.ini')
-      #  self.traces_dir = path.join(self.build_dir, 'coverage')
-       # self.config_map = self.macros.__getitem__('coverage')
         self.executables = None
         self.symbol_sets = []
-        self.symbol_config = symbols_configuration()
         self.no_clean = int(self.macros['_no_clean'])
         self.report_format = self.macros['cov_report_format']
 
@@ -334,7 +293,7 @@ class coverage_run(object):
         try:
             if self.executables is None:
                 raise error.general('no test executables provided.')
-            for sset in self.symbol_config.symbol_sets:
+         #   for sset in self.symbol_config.symbol_sets:
                 print(sset)
                 #symbol_set_file = (path.join(self.traces_dir,
                 #                             sset.name + '.symcfg'))
@@ -349,7 +308,10 @@ class coverage_run(object):
     def _generate_reports(self):
         log.notice('Generating reports')
         if self.report_format == 'html':
-            report = report_gen_html(self.symbol_sets, self.build_dir,
+         #   print(self.rtdir)
+            build_path = build_path_generator(self.executables).run()
+            report = report_gen_html(self.symbol_sets,
+                                     build_path,
                                      self.rtdir)
             report.generate()
             report.add_covoar_src_path()
