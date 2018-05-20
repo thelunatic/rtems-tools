@@ -236,8 +236,6 @@ class covoar(object):
     def __init__(self, base_result_dir, config_dir, executables, explanations_txt):
         self.base_result_dir = base_result_dir
         self.config_dir = config_dir
-        #self.executable = path.join(self.traces_dir, '*.'
-        #                            + self.executable_extension)
         self.executables = ' '.join(executables)
         self.explanations_txt = explanations_txt
         self.project_name = 'RTEMS-5'
@@ -251,7 +249,6 @@ class covoar(object):
         command = ('covoar -S ' + symbol_file
                   + ' -O ' + covoar_result_dir
                   + ' -E ' + self.explanations_txt 
-                  #FIXME: add -v 
                   + ' -p ' + self.project_name + ' ' + self.executables)
         log.notice('Running covoar for %s' % (set_name))
         print( 'covoar results directory:\n' + covoar_result_dir )
@@ -308,7 +305,6 @@ class coverage_run(object):
     def _generate_reports(self):
         log.notice('Generating reports')
         if self.report_format == 'html':
-         #   print(self.rtdir)
             build_path = build_path_generator(self.executables).run()
             report = report_gen_html(self.symbol_sets,
                                      build_path,
