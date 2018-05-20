@@ -41,6 +41,11 @@ from . import options
 import shutil
 import os
 
+try:
+    import configparser
+except:
+    import ConfigParser as configparser
+
 class summary:
     def __init__(self, p_summary_dir):
         self.summary_file_path = path.join(p_summary_dir, 'summary.txt')
@@ -229,6 +234,35 @@ class build_path_generator(object):
                 build_path = path.join(build_path, P)
         return build_path
 
+class symbol_parser(object):
+    '''
+    Parse the symbol sets and the path to libraries from symbol set file
+    '''
+    def __init__(self,symbol_set_path, build_dir):
+        self.symbol_file = symbol_set_path
+        self.build_dir = build_dir
+        self.config = configparser.ConfigParser()
+
+    def parse(self):
+        symbol_sets = {}
+        self.config.read(self.symbol_file)
+        try:
+            self.config.read(self.symbol_file)
+            print(self.config.get('symbol-sets','sets'))
+            ssets = self.config.get('symbol-sets','sets').split(',')
+            ssets = [ sset.encode('utf-8') for sset in ssets]
+            print(ssets)
+            for sset in ssets:
+                print(sset)
+                #FIXME : add a lib parser in place of hardcoding
+                #        the library path in ini file
+                lib = path.join(self.build_dir,
+                                self.config.get('libraries',sset))
+                symbol_sets[sset] = lib.encode('utf-8')
+            return symbol_sets
+        except:
+            raise error.general('Symbol set parsing failed')
+            
 class covoar(object):
     '''
     Covoar runner
@@ -280,7 +314,7 @@ class coverage_run(object):
         self.rtscripts = self.macros.expand(self.macros['_rtscripts'])
         self.coverage_config_path = path.join(self.rtscripts, 'coverage')
         self.symbol_config_path = path.join(self.coverage_config_path,
-                                            'score-symbols.ini')
+                                            'symbol-sets.ini')
         self.executables = None
         self.symbol_sets = []
         self.no_clean = int(self.macros['_no_clean'])
@@ -294,6 +328,8 @@ class coverage_run(object):
                 print(sset)
                 #symbol_set_file = (path.join(self.traces_dir,
                 #                             sset.name + '.symcfg'))
+            build_dir = build_path_generator(self.executables).run()
+            print(symbol_parser(self.symbol_config_path, build_dir).parse())
             covoar_runner = covoar(self.test_dir, self.symbol_config_path,
                                    self.executables, self.explanations_txt)
             covoar_runner.run('score', self.symbol_config_path)
