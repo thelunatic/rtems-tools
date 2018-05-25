@@ -236,32 +236,43 @@ class build_path_generator(object):
 
 class symbol_parser(object):
     '''
-    Parse the symbol sets and the path to libraries from symbol set file
+    Parse the symbol sets ini and create custom ini file for covoar
     '''
-    def __init__(self,symbol_set_path, build_dir):
-        self.symbol_file = symbol_set_path
+    def __init__(self, symbol_config_path,
+                 symbol_select_path, build_dir):
+        self.symbol_select_file = symbol_select_path
+        self.symbol_file = symbol_config_path
         self.build_dir = build_dir
         self.config = configparser.ConfigParser()
 
     def parse(self):
         symbol_sets = {}
-        self.config.read(self.symbol_file)
         try:
             self.config.read(self.symbol_file)
-            print(self.config.get('symbol-sets','sets'))
             ssets = self.config.get('symbol-sets','sets').split(',')
             ssets = [ sset.encode('utf-8') for sset in ssets]
-            print(ssets)
             for sset in ssets:
-                print(sset)
-                #FIXME : add a lib parser in place of hardcoding
-                #        the library path in ini file
                 lib = path.join(self.build_dir,
                                 self.config.get('libraries',sset))
                 symbol_sets[sset] = lib.encode('utf-8')
             return symbol_sets
         except:
             raise error.general('Symbol set parsing failed')
+
+    def write_ini(self, symbol_sets):
+        try:    
+            self.config.add_section('symbol-sets')
+            print(symbol_sets.keys())
+            sets = ', '.join(symbol_sets.keys())
+            self.config.set('symbol-sets', 'sets', sets)
+            for key in symbol_sets.keys():
+                self.config.add_section(key)
+                self.config.set(key, 'libraries', symbol_sets[key])
+            with open(self.symbol_select_file, 'w') as config:
+                self.config.write(config)
+        except: 
+            raise error.general('write failed')
+
             
 class covoar(object):
     '''
@@ -315,6 +326,8 @@ class coverage_run(object):
         self.coverage_config_path = path.join(self.rtscripts, 'coverage')
         self.symbol_config_path = path.join(self.coverage_config_path,
                                             'symbol-sets.ini')
+        self.symbol_select_path = path.join(self.coverage_config_path,
+                                            'symbol-select.ini')
         self.executables = None
         self.symbol_sets = []
         self.no_clean = int(self.macros['_no_clean'])
@@ -324,15 +337,20 @@ class coverage_run(object):
         try:
             if self.executables is None:
                 raise error.general('no test executables provided.')
-         #   for sset in self.symbol_config.symbol_sets:
-                print(sset)
-                #symbol_set_file = (path.join(self.traces_dir,
-                #                             sset.name + '.symcfg'))
             build_dir = build_path_generator(self.executables).run()
-            print(symbol_parser(self.symbol_config_path, build_dir).parse())
-            covoar_runner = covoar(self.test_dir, self.symbol_config_path,
+            parser = symbol_parser(self.symbol_config_path,
+                                   self.symbol_select_path,
+                                   build_dir)
+            symbol_sets = parser.parse()
+            #FIXME : call writer from parse()
+            #        parse the file according to 
+            #        the list from user
+            symbol_parser(self.symbol_config_path,
+                          self.symbol_select_path,
+                          build_dir).write_ini(symbol_sets)
+            covoar_runner = covoar(self.test_dir, self.symbol_select_path,
                                    self.executables, self.explanations_txt)
-            covoar_runner.run('score', self.symbol_config_path)
+            covoar_runner.run('score', self.symbol_select_path)
             self._generate_reports();
             self._summarize();
         finally:
