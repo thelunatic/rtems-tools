@@ -239,39 +239,47 @@ class symbol_parser(object):
     Parse the symbol sets ini and create custom ini file for covoar
     '''
     def __init__(self, symbol_config_path,
-                 symbol_select_path, build_dir):
+                 symbol_select_path, coverage_arg, build_dir):
         self.symbol_select_file = symbol_select_path
         self.symbol_file = symbol_config_path
         self.build_dir = build_dir
-        self.config = configparser.ConfigParser()
+        self.symbol_sets = {}
+        self.cov_arg = coverage_arg
+        self.ssets = []
 
     def parse(self):
-        symbol_sets = {}
+        config = configparser.ConfigParser()
         try:
-            self.config.read(self.symbol_file)
-            ssets = self.config.get('symbol-sets','sets').split(',')
-            ssets = [ sset.encode('utf-8') for sset in ssets]
-            for sset in ssets:
+            config.read(self.symbol_file)
+            if self.cov_arg:
+                self.ssets = self.cov_arg.split(',')
+            else:
+                self.ssets = config.get('symbol-sets', 'sets').split(',')
+                self.ssets = [ sset.encode('utf-8') for sset in self.ssets]
+            for sset in self.ssets:
                 lib = path.join(self.build_dir,
-                                self.config.get('libraries',sset))
-                symbol_sets[sset] = lib.encode('utf-8')
-            return symbol_sets
+                                config.get('libraries', sset))
+                self.symbol_sets[sset] = lib.encode('utf-8')
         except:
             raise error.general('Symbol set parsing failed')
 
-    def write_ini(self, symbol_sets):
+    def _write_ini(self):
+        config = configparser.ConfigParser()
         try:    
-            self.config.add_section('symbol-sets')
-            print(symbol_sets.keys())
-            sets = ', '.join(symbol_sets.keys())
-            self.config.set('symbol-sets', 'sets', sets)
-            for key in symbol_sets.keys():
-                self.config.add_section(key)
-                self.config.set(key, 'libraries', symbol_sets[key])
-            with open(self.symbol_select_file, 'w') as config:
-                self.config.write(config)
+            sets = ', '.join(self.symbol_sets.keys())
+            config.add_section('symbol-sets')
+            config.set('symbol-sets', 'sets', sets)
+            for key in self.symbol_sets.keys():
+                config.add_section(key)
+                config.set(key, 'libraries', self.symbol_sets[key])
+            with open(self.symbol_select_file, 'w') as conf:
+                config.write(conf)
         except: 
             raise error.general('write failed')
+
+    def run(self):
+        symbol_sets = self.parse()
+        self._write_ini()
 
             
 class covoar(object):
@@ -311,7 +319,7 @@ class coverage_run(object):
     '''
     Coverage analysis support for rtems-test
     '''
-    def __init__(self, p_macros):
+    def __init__(self, p_macros, coverage_arg):
         '''
         Constructor
         '''
@@ -332,6 +340,7 @@ class coverage_run(object):
         self.symbol_sets = []
         self.no_clean = int(self.macros['_no_clean'])
         self.report_format = self.macros['cov_report_format']
+        self.coverage_arg = coverage_arg
 
     def run(self):
         try:
@@ -340,14 +349,9 @@ class coverage_run(object):
             build_dir = build_path_generator(self.executables).run()
             parser = symbol_parser(self.symbol_config_path,
                                    self.symbol_select_path,
+                                   self.coverage_arg,
                                    build_dir)
-            symbol_sets = parser.parse()
-            #FIXME : call writer from parse()
-            #        parse the file according to 
-            #        the list from user
-            symbol_parser(self.symbol_config_path,
-                          self.symbol_select_path,
-                          build_dir).write_ini(symbol_sets)
+            parser.run()
             covoar_runner = covoar(self.test_dir, self.symbol_select_path,
                                    self.executables, self.explanations_txt)
             covoar_runner.run('score', self.symbol_select_path)
@@ -359,9 +363,8 @@ class coverage_run(object):
     def _generate_reports(self):
         log.notice('Generating reports')
         if self.report_format == 'html':
-            build_path = build_path_generator(self.executables).run()
             report = report_gen_html(self.symbol_sets,
-                                     build_path,
+                                     self.build_dir,
                                      self.rtdir)
             report.generate()
             report.add_covoar_src_path()

@@ -290,7 +290,11 @@ def run(command_path = None):
         bsp_config = opts.defaults.expand(opts.defaults['tester'])
         coverage_enabled = opts.find_arg('--coverage')
         if coverage_enabled:
-            coverage_runner = coverage.coverage_run(opts.defaults)
+            if len(coverage_enabled) == 2:
+                coverage_runner = coverage.coverage_run(opts.defaults,
+                                                coverage_enabled[1])
+            else:
+                coverage_runner = coverage.coverage_run(opts.defaults, 0)
         report_mode = opts.find_arg('--report-mode')
         if report_mode:
             if report_mode[1] != 'failures' and \
