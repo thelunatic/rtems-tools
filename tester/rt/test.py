@@ -149,7 +149,7 @@ class test_run(object):
 
     def run(self):
         self.thread = threading.Thread(target = self.runner,
-                                       name = 'test[%s]' % path.basename(self.executable))
+                            name = 'test[%s]' % path.basename(self.executable))
         self.thread.start()
 
     def is_alive(self):

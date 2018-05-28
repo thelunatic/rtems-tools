@@ -278,7 +278,7 @@ class symbol_parser(object):
             raise error.general('write failed')
 
     def run(self):
-        symbol_sets = self.parse()
+        self.parse()
         self._write_ini()
 
             
