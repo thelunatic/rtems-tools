@@ -218,7 +218,6 @@ def killall(tests):
 
 
 def coverage_run(opts, coverage, executables):
-    #coverage.config_map = opts.defaults.macros['coverage']
     coverage.executables = executables
     coverage.run()
 
@@ -292,7 +291,8 @@ def run(command_path = None):
         if coverage_enabled:
             if len(coverage_enabled) == 2:
                 coverage_runner = coverage.coverage_run(opts.defaults,
-                                                coverage_enabled[1])
+                                                coverage_enabled[1],
+                                                opts.defaults['target'])
             else:
                 coverage_runner = coverage.coverage_run(opts.defaults, 0)
         report_mode = opts.find_arg('--report-mode')

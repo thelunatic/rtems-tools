@@ -219,16 +219,14 @@ class build_path_generator(object):
     '''
     Generates the build path from the path to executables
     '''
-    def __init__(self, executables):
+    def __init__(self, executables, target):
         self.executables = executables
-
+        self.target = target
     def run(self):
         build_path = '/'
         Path = self.executables[0].split('/')
-#FIXME : target must be taken from external
-        target = 'sparc-rtems5'
         for P in Path:
-            if P == target:
+            if P == self.target:
                 break;
             else:
                 build_path = path.join(build_path, P)
@@ -319,7 +317,7 @@ class coverage_run(object):
     '''
     Coverage analysis support for rtems-test
     '''
-    def __init__(self, p_macros, coverage_arg):
+    def __init__(self, p_macros, coverage_arg, target):
         '''
         Constructor
         '''
@@ -341,12 +339,13 @@ class coverage_run(object):
         self.no_clean = int(self.macros['_no_clean'])
         self.report_format = self.macros['cov_report_format']
         self.coverage_arg = coverage_arg
+        self.target = target
 
     def run(self):
         try:
             if self.executables is None:
                 raise error.general('no test executables provided.')
-            build_dir = build_path_generator(self.executables).run()
+            build_dir = build_path_generator(self.executables, self.target).run()
             parser = symbol_parser(self.symbol_config_path,
                                    self.symbol_select_path,
                                    self.coverage_arg,
