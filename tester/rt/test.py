@@ -232,7 +232,7 @@ def run(command_path = None):
                     '--filter':         'Glob that executables must match to run (default: ' +
                               default_exefilter + ')',
                     '--stacktrace':     'Dump a stack trace on a user termination (^C)',
-                    '--coverage':       'Perform coverage analysis of test executables.'}
+                    '--coverage-sets':  'Perform coverage analysis for specific sets.'}
         mailer.append_options(optargs)
         opts = options.load(sys.argv,
                             optargs = optargs,
@@ -283,14 +283,21 @@ def run(command_path = None):
             raise error.general('RTEMS BSP not provided or an invalid option')
         bsp = config.load(bsp[1], opts)
         bsp_config = opts.defaults.expand(opts.defaults['tester'])
-        coverage_enabled = opts.find_arg('--coverage')
+        coverage_sets = opts.find_arg('--coverage-sets')
+        try:
+            coverage_enabled = opts.defaults.get('coverage')
+        except:
+            coverage_enabled = False
         if coverage_enabled:
             cov_trace = 'cov' in debug_trace.split(',')
-            if len(coverage_enabled) == 2:
-                coverage_runner = coverage.coverage_run(opts.defaults,
-                                                        executables,
-                                                        symbol_set = coverage_enabled[1],
-                                                        trace = cov_trace)
+            if coverage_sets:
+                if len(coverage_sets) != 2:
+                    raise error.general('No sets provided in --coverage-sets')
+                else:
+                    coverage_runner = coverage.coverage_run(opts.defaults,
+                                                            executables,
+                                                            symbol_set = coverage_sets[1],
+                                                            trace = cov_trace)
             else:
                 coverage_runner = coverage.coverage_run(opts.defaults,
                                                         executables,
