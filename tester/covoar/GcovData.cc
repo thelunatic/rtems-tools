@@ -50,6 +50,7 @@ namespace Gcov {
       );
       return false;
     }
+    std::cout<<fileName;
     strcpy( gcnoFileName, fileName );
     strcpy( gcdaFileName, fileName );
     strcpy( textFileName, fileName );
@@ -69,7 +70,7 @@ namespace Gcov {
     }
 
     // Debug message
-    // fprintf( stderr, "Readning file: %s\n",  gcnoFileName);
+    fprintf( stderr, "Readning file: %s\n",  gcnoFileName);
 
     // Open the notes file.
     gcovFile = fopen( gcnoFileName, "r" );
@@ -299,7 +300,7 @@ namespace Gcov {
 				header.length -= 2;
 
 				// Find the right block
-				tempBlockIterator =functions.back()->findBlockById(tempBlockId);
+				tempBlockIterator = functions.back()->findBlockById(tempBlockId);
 
 				header.length -= readString(buffer, gcovFile);
 				functions.back()->setBlockFileName( tempBlockIterator, buffer );
