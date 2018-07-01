@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <string>
 #include <stdlib.h>
 //#include <sys/stat.h>
 
@@ -40,7 +41,7 @@ namespace Gcov {
     FILE*               gcovFile;
     char*		tempString;
     char*		tempString2;
-    char*		tempString3;
+    //char*		tempString3;
 
     if ( strlen(fileName) >= FILE_NAME_LENGTH ){
       fprintf(
@@ -50,14 +51,15 @@ namespace Gcov {
       );
       return false;
     }
-    std::cout<<fileName;
     strcpy( gcnoFileName, fileName );
     strcpy( gcdaFileName, fileName );
     strcpy( textFileName, fileName );
-    strcpy( cFileName, fileName );
+    //strcpy( cFileName, fileName );
+    std::string tempString3 =  "/home/lunatic/development/rtems/kernel/rtems/testsuites/samples/hello/init.c";
+    strcpy (cFileName, "/home/lunatic/development/rtems/kernel/rtems/testsuites/samples/hello/init.c");
     tempString = strstr( gcdaFileName,".gcno" );
     tempString2 = strstr( textFileName,".gcno" );
-    tempString3 = strstr( cFileName,".gcno" );
+    //tempString3 = strstr( cFileName,".gcno" );
 
     if ( (tempString == NULL) && (tempString2 == NULL) ){
       fprintf(stderr, "ERROR: incorrect name of *.gcno file\n");
@@ -66,7 +68,7 @@ namespace Gcov {
     {
       strcpy( tempString, ".gcda");		// construct gcda file name
       strcpy( tempString2, ".txt");		// construct report file name
-      strcpy( tempString3, ".c");		// construct source file name
+      //strcpy( tempString3, ".c");		// construct source file name
     }
 
     // Debug message
@@ -113,7 +115,7 @@ namespace Gcov {
 	  size_t			status;
 
 	  // Debug message
-	  // fprintf( stderr, "Writing file: %s\n",  gcdaFileName);
+	  fprintf( stderr, "Writing file: %s\n",  gcdaFileName);
 
 	  // Lets clear counters sumators
 	  countersSum 		= 0;
@@ -478,12 +480,13 @@ namespace Gcov {
 
   void GcovData::writeGcovFile( )
   {
-    //std::cerr << "Attempting to run gcov for: " << cFileName << std::endl;
+    std::cerr << "Attempting to run gcov for: " << cFileName << std::endl;
     std::ostringstream command;
-    command << "( cd " << rld::path::dirname (cFileName)
-	    << " && gcov " << rld::path::basename (cFileName)
-	    << " &>> gcov.log)";
-    //std::cerr << "> " << command << std::endl;
+    command << " cd " << rld::path::dirname (cFileName)
+	    << " && sparc-rtems5-gcov " << rld::path::basename (cFileName) 
+	    <<" -o "<< gcnoFileName
+	    << " > gcov.log";
+    //std::cerr << "> " << command.str ().c_str () << std::endl;
     system( command.str ().c_str () );
   }
 
