@@ -21,7 +21,7 @@
 #include "GcovData.h"
 //#include "ExecutableInfo.h"
 //#include "CoverageMap.h"
-//#include "qemu-traces.h"
+#include "qemu-traces.h"
 
 
 namespace Gcov {
@@ -364,7 +364,7 @@ namespace Gcov {
 	    length = sizeof(gcov_frame_header);
 	    status = fread( header, length, 1, gcovFile );
 	    if (status != 1){
-		//fprintf( stderr, "ERROR: Unable to read frame header from gcov file\n" );
+		fprintf( stderr, "ERROR: Unable to read frame header from gcov file\n" );
 	    	return -1;
 	    }
 
