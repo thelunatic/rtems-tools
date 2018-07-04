@@ -73,7 +73,7 @@ void usage()
     "Usage: %s [-v] -l ADDRESS -h ADDRESS coverage_in coverage_out\n"
     "\n"
     "  -l low address   - low address of range to merge\n"
-    "  -l high address  - high address of range to merge\n"
+    "  -h high address  - high address of range to merge\n"
     "  -f format        - coverage files are in <format> (Qemu)\n"
     "  -v               - verbose at initialization\n"
     "\n",
