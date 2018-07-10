@@ -248,7 +248,8 @@ typedef std::list<gcov_block_info>::iterator	blocks_iterator_t;
     arcs_t		arcs;
     blocks_t		blocks;
     char		functionName[FUNCTION_NAME_LENGTH];
-    char		sourceFileName[FILE_NAME_LENGTH];
+   // char		sourceFileName[FILE_NAME_LENGTH];
+    std::string         sourceFileName;
 
     /*!
      *  This member contains the unified or merged coverage map

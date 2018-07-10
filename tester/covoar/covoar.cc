@@ -161,6 +161,7 @@ int covoar(
   const char*                   gcnosFileName = NULL;
   char                          gcnoFileName[FILE_NAME_LENGTH];
   char                          gcdaFileName[FILE_NAME_LENGTH];
+  char                          fileBuffer[FILE_NAME_LENGTH];
   char                          gcovBashCommand[256];
   std::string                   target;
   const char*                   format = "html";
@@ -418,14 +419,12 @@ int covoar(
       std::cerr << "Generating Gcov reports..." << std::endl;
 
     gcnosFile = fopen ( gcnosFileName , "r" );
-
     if ( !gcnosFile )
       std::cerr << "Unable to open " << gcnosFileName << std::endl;
     else {
-      while ( fscanf( gcnosFile, "%s", inputBuffer ) != EOF) {
+      while ( fscanf( gcnosFile, "%s", fileBuffer ) != EOF) {
         gcovFile = new Gcov::GcovData();
-        strcpy( gcnoFileName, inputBuffer );
-
+        strcpy( gcnoFileName, fileBuffer );
         if ( Verbose )
           std::cerr << "Processing file: " << gcnoFileName << std::endl;
 

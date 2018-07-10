@@ -13,7 +13,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <string>
 #include <stdlib.h>
 //#include <sys/stat.h>
 
@@ -21,7 +20,7 @@
 #include "GcovData.h"
 //#include "ExecutableInfo.h"
 //#include "CoverageMap.h"
-#include "qemu-traces.h"
+//#include "qemu-traces.h"
 
 
 namespace Gcov {
@@ -41,7 +40,8 @@ namespace Gcov {
     FILE*               gcovFile;
     char*		tempString;
     char*		tempString2;
-    //char*		tempString3;
+   // char*		tempString3;
+    std::string         tempString3;
 
     if ( strlen(fileName) >= FILE_NAME_LENGTH ){
       fprintf(
@@ -55,12 +55,16 @@ namespace Gcov {
     strcpy( gcdaFileName, fileName );
     strcpy( textFileName, fileName );
     //strcpy( cFileName, fileName );
-    std::string tempString3 =  "/home/lunatic/development/rtems/kernel/rtems/testsuites/samples/hello/init.c";
-    strcpy (cFileName, "/home/lunatic/development/rtems/kernel/rtems/testsuites/samples/hello/init.c");
+
     tempString = strstr( gcdaFileName,".gcno" );
     tempString2 = strstr( textFileName,".gcno" );
     //tempString3 = strstr( cFileName,".gcno" );
-
+    cFileName  = "/home/lunatic/development/rtems/kernel/rtems/cpukit/score/src/";
+    tempString3 = fileName;
+    tempString3 = tempString3.substr (95);
+    std::size_t pos = tempString3.find ("gcno");
+    tempString3.replace ( pos, 4, "c");
+    cFileName.append(tempString3);
     if ( (tempString == NULL) && (tempString2 == NULL) ){
       fprintf(stderr, "ERROR: incorrect name of *.gcno file\n");
     }
@@ -72,7 +76,7 @@ namespace Gcov {
     }
 
     // Debug message
-    fprintf( stderr, "Readning file: %s\n",  gcnoFileName);
+    // fprintf( stderr, "Readning file: %s\n",  gcnoFileName);
 
     // Open the notes file.
     gcovFile = fopen( gcnoFileName, "r" );
@@ -115,7 +119,7 @@ namespace Gcov {
 	  size_t			status;
 
 	  // Debug message
-	  fprintf( stderr, "Writing file: %s\n",  gcdaFileName);
+	  // fprintf( stderr, "Writing file: %s\n",  gcdaFileName);
 
 	  // Lets clear counters sumators
 	  countersSum 		= 0;
@@ -302,7 +306,7 @@ namespace Gcov {
 				header.length -= 2;
 
 				// Find the right block
-				tempBlockIterator = functions.back()->findBlockById(tempBlockId);
+				tempBlockIterator =functions.back()->findBlockById(tempBlockId);
 
 				header.length -= readString(buffer, gcovFile);
 				functions.back()->setBlockFileName( tempBlockIterator, buffer );
@@ -364,7 +368,7 @@ namespace Gcov {
 	    length = sizeof(gcov_frame_header);
 	    status = fread( header, length, 1, gcovFile );
 	    if (status != 1){
-		fprintf( stderr, "ERROR: Unable to read frame header from gcov file\n" );
+		//fprintf( stderr, "ERROR: Unable to read frame header from gcov file\n" );
 	    	return -1;
 	    }
 
@@ -480,13 +484,13 @@ namespace Gcov {
 
   void GcovData::writeGcovFile( )
   {
-    std::cerr << "Attempting to run gcov for: " << cFileName << std::endl;
+    //std::cerr << "Attempting to run gcov for: " << cFileName << std::endl;
     std::ostringstream command;
-    command << " cd " << rld::path::dirname (cFileName)
-	    << " && sparc-rtems5-gcov " << rld::path::basename (cFileName) 
-	    <<" -o "<< gcnoFileName
+    command << "cd " << rld::path::dirname (cFileName)
+	    << " && gcov " << rld::path::basename (cFileName)
+	    << " -o " << gcnoFileName
 	    << " > gcov.log";
-    //std::cerr << "> " << command.str ().c_str () << std::endl;
+    //std::cerr << "> " << command.str ().c_str ()<< std::endl;
     system( command.str ().c_str () );
   }
 

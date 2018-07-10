@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <list>
 #include <iostream>
+#include <string>
 #include "GcovFunctionData.h"
 
 namespace Gcov {
@@ -116,7 +117,8 @@ struct gcov_statistics
     char				gcnoFileName[FILE_NAME_LENGTH];
     char				gcdaFileName[FILE_NAME_LENGTH];
     char				textFileName[FILE_NAME_LENGTH];
-    char				cFileName[FILE_NAME_LENGTH];
+   // char				cFileName[FILE_NAME_LENGTH];
+    std::string                         cFileName;
     functions_t				functions;
 
 

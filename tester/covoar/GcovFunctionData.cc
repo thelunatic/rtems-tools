@@ -95,7 +95,8 @@ namespace Gcov {
       );
       return false;
     }
-    strcpy (sourceFileName, fileName);
+    //strcpy (sourceFileName, fileName);
+    sourceFileName = fileName;
     return true;
   }
 
