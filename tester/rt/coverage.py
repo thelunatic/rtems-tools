@@ -100,7 +100,7 @@ class summary:
 
 class report_gen_html:
     def __init__(self, p_symbol_sets_list, build_dir, rtdir, bsp):
-        self.symbol_sets_list = ['score']
+        self.symbol_sets_list = p_symbol_sets_list
         self.build_dir = build_dir
         self.partial_reports_files = list(['index.html', 'summary.txt'])
         self.number_of_columns = 1
@@ -250,40 +250,36 @@ class symbol_parser(object):
         self.build_dir = build_dir
         self.symbol_sets = {}
         self.symbol_set = symbol_set
-        self.ssets = []
+        self.symbol_set_list = []
 
     def parse(self):
         config = configparser.ConfigParser()
         try:
             config.read(self.symbol_file)
             if self.symbol_set is not None:
-                self.ssets = self.symbol_set.split(',')
+                self.symbol_set_list = self.symbol_set.split(',')
             else:
-                self.ssets = config.get('symbol-sets', 'sets').split(',')
-                self.ssets = [sset.encode('utf-8') for sset in self.ssets]
-            for sset in self.ssets:
+                self.symbol_set_list = config.get('symbol-sets', 'sets').split(',')
+                self.symbol_set_list = [sset.encode('utf-8') for sset in self.symbol_set_list]
+            for sset in self.symbol_set_list:
                 lib = path.join(self.build_dir, config.get('libraries', sset))
                 self.symbol_sets[sset] = lib.encode('utf-8')
+            return self.symbol_set_list 
         except:
             raise error.general('Symbol set parsing failed')
 
-    def _write_ini(self):
+    def write_ini(self, symbol_set):
         config = configparser.ConfigParser()
         try:
-            sets = ', '.join(self.symbol_sets.keys())
+            sset = symbol_set
             config.add_section('symbol-sets')
-            config.set('symbol-sets', 'sets', sets)
-            for key in self.symbol_sets.keys():
-                config.add_section(key)
-                config.set(key, 'libraries', self.symbol_sets[key])
+            config.set('symbol-sets', 'sets', sset)
+            config.add_section(sset)
+            config.set(sset, 'libraries', self.symbol_sets[sset])
             with open(self.symbol_select_file, 'w') as conf:
                 config.write(conf)
         except:
             raise error.general('symbol parser write failed')
-
-    def run(self):
-        self.parse()
-        self._write_ini()
 
 class covoar(object):
     '''
@@ -371,20 +367,22 @@ class coverage_run(object):
                                    self.symbol_select_path,
                                    self.symbol_set,
                                    build_dir)
-            parser.run()
-            covoar_runner = covoar(self.test_dir, self.symbol_select_path,
+            symbol_set_list = parser.parse()
+            for sset in symbol_set_list:
+                parser.write_ini(sset)
+                covoar_runner = covoar(self.test_dir, self.symbol_select_path,
                                    self.executables, self.explanations_txt,
                                    self.trace)
-            covoar_runner.run('score', self.symbol_select_path)
-            self._generate_reports();
+                covoar_runner.run(sset, self.symbol_select_path)
+            self._generate_reports(symbol_set_list);
             self._summarize();
         finally:
             self._cleanup();
 
-    def _generate_reports(self):
+    def _generate_reports(self, symbol_sets):
         log.notice('Coverage generating reports')
         if self.report_format == 'html':
-            report = report_gen_html(self.symbol_sets,
+            report = report_gen_html(symbol_sets,
                                      self.build_dir,
                                      self.rtdir,
                                      self.macros['bsp'])
