@@ -61,7 +61,8 @@ def build(bld):
     conf['includes'] = ['elftoolchain/libelf',
                         'elftoolchain/libdwarf',
                         'elftoolchain/common',
-                        'libiberty']
+                        'libiberty',
+                        'capstone']
     if bld.env.DEST_OS == 'win32':
         conf['includes'] += ['win32']
 
@@ -80,6 +81,7 @@ def build(bld):
     #
     bld_elftoolchain(bld, conf)
     bld_libiberty(bld, conf)
+    bld_capstone(bld, conf)
 
     #
     # RLD source.
@@ -161,6 +163,117 @@ def rebuild(ctx):
 
 def tags(ctx):
     ctx.exec_command('etags $(find . -name \*.[sSch])', shell = True)
+
+#
+# Capstone
+#
+def conf_capstone(conf):
+    pass
+
+def bld_capstone(bld, conf):
+    capstone = 'capstone/'
+    cstool = 'capstone/cstool/'
+    includes = ['capstone/include/capstone', 'capstone/include']
+    source = [capstone + 'SStream.c',
+              capstone + 'cs.c',
+              capstone + 'utils.c',
+              capstone + 'MCInstrDesc.c',
+              capstone + 'MCRegisterInfo.c',
+              capstone + 'MCInst.c',
+              capstone + 'arch/ARM/ARMModule.c',
+              capstone + 'arch/ARM/ARMMapping.c',
+              capstone + 'arch/ARM/ARMInstPrinter.c',
+              capstone + 'arch/ARM/ARMDisassembler.c',
+              capstone + 'arch/AArch64/AArch64Disassembler.c',
+              capstone + 'arch/AArch64/AArch64Module.c',
+              capstone + 'arch/AArch64/AArch64Mapping.c',
+              capstone + 'arch/AArch64/AArch64InstPrinter.c',
+              capstone + 'arch/AArch64/AArch64BaseInfo.c',
+              capstone + 'arch/M68K/M68KInstPrinter.c',
+              capstone + 'arch/M68K/M68KDisassembler.c',
+              capstone + 'arch/M68K/M68KModule.c',
+              capstone + 'arch/Mips/MipsDisassembler.c',
+              capstone + 'arch/Mips/MipsModule.c',
+              capstone + 'arch/Mips/MipsMapping.c',
+              capstone + 'arch/Mips/MipsInstPrinter.c',
+              capstone + 'arch/PowerPC/PPCInstPrinter.c',
+              capstone + 'arch/PowerPC/PPCDisassembler.c',
+              capstone + 'arch/PowerPC/PPCModule.c',
+              capstone + 'arch/PowerPC/PPCMapping.c',
+              capstone + 'arch/Sparc/SparcInstPrinter.c',
+              capstone + 'arch/Sparc/SparcDisassembler.c',
+              capstone + 'arch/Sparc/SparcModule.c',
+              capstone + 'arch/Sparc/SparcMapping.c',
+              capstone + 'arch/SystemZ/SystemZDisassembler.c',
+              capstone + 'arch/SystemZ/SystemZMCTargetDesc.c',
+              capstone + 'arch/SystemZ/SystemZModule.c',
+              capstone + 'arch/SystemZ/SystemZMapping.c',
+              capstone + 'arch/SystemZ/SystemZInstPrinter.c',
+              capstone + 'arch/X86/X86DisassemblerDecoder.c',
+              capstone + 'arch/X86/X86Disassembler.c',
+              capstone + 'arch/X86/X86IntelInstPrinter.c',
+              capstone + 'arch/X86/X86ATTInstPrinter.c',
+              capstone + 'arch/X86/X86Mapping.c',
+              capstone + 'arch/X86/X86Module.c',
+              capstone + 'arch/XCore/XCoreModule.c',
+              capstone + 'arch/XCore/XCoreMapping.c',
+              capstone + 'arch/XCore/XCoreInstPrinter.c',
+              capstone + 'arch/XCore/XCoreDisassembler.c',
+              capstone + 'arch/TMS320C64x/TMS320C64xDisassembler.c',
+              capstone + 'arch/TMS320C64x/TMS320C64xModule.c',
+              capstone + 'arch/TMS320C64x/TMS320C64xMapping.c',
+              capstone + 'arch/TMS320C64x/TMS320C64xInstPrinter.c',
+              capstone + 'arch/M680X/M680XDisassembler.c',
+              capstone + 'arch/M680X/M680XModule.c',
+              capstone + 'arch/M680X/M680XInstPrinter.c',
+              capstone + 'arch/EVM/EVMMapping.c',
+             # capstone + 'arch/EVM/EVMModule.c',
+              #capstone + 'arch/EVM/EVMInstPrinter.c',
+              #capstone + 'arch/EVM/EVMDisassembler.c',
+              ]
+
+    if bld.env.DEST_OS == 'win32':
+	    includes += ['capstone/windows', 'capstone/include/windowsce' ]
+	    source += 'capstone/windows/winkernel_mm.c'
+    
+    bld.shlib(target = 'capstone',
+	          features = 'c',
+			  install_path = '${PREFIX}/bin',
+			  includes = includes,
+			  cflags = conf['cflags'],
+			  source = source )
+
+    bld.program(target = 'cstool',
+	            source = [cstool + 'cstool.c',
+                          cstool + 'cstool_arm.c',
+                          cstool + 'cstool_arm64.c',
+                          cstool + 'cstool_evm.c',
+                          cstool + 'cstool_m680x.c',
+                          cstool + 'cstool_m68k.c',
+                          cstool + 'cstool_mips.c',
+                          cstool + 'cstool_ppc.c',
+                          cstool + 'cstool_sparc.c',
+                          cstool + 'cstool_systemz.c',
+                          cstool + 'cstool_tms320c64x.c',
+                          cstool + 'cstool_x86.c',
+                          cstool + 'cstool_xcore.c',
+						  ],
+			    use = 'capstone',
+				cflags = conf['cflags'],
+				install_path = '${PREFIX}/bin')
+
+    bld(target = 'capstone.pc',
+	    source = capstone + 'capstone.pc.in',
+		install_path = bld.bldnode.abspath(),
+		features = 'subst'
+		)
+	
+    bld.program(target = 'test',
+	            source = 'capstone/tests/test_arm64.c',
+				use = 'capstone',
+				install_path = '/home/lunatic/capstone_test',
+				cflags = conf['cflags'],
+                includes = includes )
 
 #
 # Libelf module.
