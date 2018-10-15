@@ -238,6 +238,13 @@ def bld_capstone(bld, conf):
     
     bld.shlib(target = 'capstone',
 	          features = 'c',
+			  install_path = '/usr/lib',
+			  includes = includes,
+			  cflags = conf['cflags'],
+			  source = source )
+
+    bld.stlib(target = 'capstone',
+	          features = 'c',
 			  install_path = '${PREFIX}/bin',
 			  includes = includes,
 			  cflags = conf['cflags'],
@@ -259,6 +266,7 @@ def bld_capstone(bld, conf):
                           cstool + 'cstool_xcore.c',
 						  ],
 			    use = 'capstone',
+				includes = includes,
 				cflags = conf['cflags'],
 				install_path = '${PREFIX}/bin')
 
@@ -267,14 +275,7 @@ def bld_capstone(bld, conf):
 		install_path = bld.bldnode.abspath(),
 		features = 'subst'
 		)
-	
-    bld.program(target = 'test',
-	            source = 'capstone/tests/test_arm64.c',
-				use = 'capstone',
-				install_path = '/home/lunatic/capstone_test',
-				cflags = conf['cflags'],
-                includes = includes )
-
+		
 #
 # Libelf module.
 #
