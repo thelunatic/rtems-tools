@@ -324,6 +324,9 @@ def generate_junit_report(args, reports, start_time, end_time,
         if result_type == 'failed' or result_type == 'timeout':
             junit_result.add_failure_info(None, reports.results[name]['output'], result_type)
 
+        if result_type == "user-input" or result_type == "benchmark":
+            junit_result.add_skipped_info(None, reports.results[name]['output'])
+
         junit_log.append(junit_result)
 
     ts = TestSuite('RTEMS Test Suite', junit_log)
